@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="生产记账">
+  <meta name="theme-color" content="#f2f2f7">
+  <title>生产记账</title>
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.visible{visibility:visible}.fixed{position:fixed}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0}.left-0{left:0}.top-0{top:0}.z-10{z-index:10}.z-20{z-index:20}.z-30{z-index:30}.z-50{z-index:50}.m-0{margin:0}.mb-3{margin-bottom:.75rem}.mr-0\.5{margin-right:.125rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.table{display:table}.h-3\.5{height:.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-screen{height:100vh}.max-h-48{max-height:12rem}.max-h-\[80vh\]{max-height:80vh}.w-11{width:2.75rem}.w-16{width:4rem}.w-3\.5{width:.875rem}.w-32{width:8rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-full{width:100%}.min-w-full{min-width:100%}.max-w-lg{max-width:32rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.border-separate{border-collapse:separate}.border-spacing-0{--tw-border-spacing-x:0px;--tw-border-spacing-y:0px;border-spacing:var(--tw-border-spacing-x) var(--tw-border-spacing-y)}.select-text{-webkit-user-select:text;-moz-user-select:text;user-select:text}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:.125rem}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.divide-gray-100>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(243 244 246/var(--tw-divide-opacity,1))}.overflow-auto{overflow:auto}.overflow-hidden{overflow:hidden}.whitespace-pre-wrap{white-space:pre-wrap}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-bl-2xl{border-bottom-left-radius:1rem}.rounded-br-2xl{border-bottom-right-radius:1rem}.rounded-tr-2xl{border-top-right-radius:1rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-t-2{border-top-width:2px}.border-blue-100{--tw-border-opacity:1;border-color:rgb(219 234 254/var(--tw-border-opacity,1))}.border-blue-100\/80{border-color:rgba(219,234,254,.8)}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246/var(--tw-border-opacity,1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235/var(--tw-border-opacity,1))}.border-gray-200\/80{border-color:rgba(229,231,235,.8)}.border-gray-200\/90{border-color:rgba(229,231,235,.9)}.border-gray-50{--tw-border-opacity:1;border-color:rgb(249 250 251/var(--tw-border-opacity,1))}.bg-\[\#f2f2f7\]{--tw-bg-opacity:1;background-color:rgb(242 242 247/var(--tw-bg-opacity,1))}.bg-black\/40{background-color:rgba(0,0,0,.4)}.bg-blue-50\/50{background-color:rgba(239,246,255,.5)}.bg-blue-50\/80{background-color:rgba(239,246,255,.8)}.bg-blue-50\/90{background-color:rgba(239,246,255,.9)}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246/var(--tw-bg-opacity,1))}.bg-gray-200\/60{background-color:rgba(229,231,235,.6)}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1))}.bg-gray-50\/80{background-color:rgba(249,250,251,.8)}.bg-gray-50\/90{background-color:rgba(249,250,251,.9)}.bg-gray-900{--tw-bg-opacity:1;background-color:rgb(17 24 39/var(--tw-bg-opacity,1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-white\/90{background-color:hsla(0,0%,100%,.9)}.p-0{padding:0}.p-1\.5{padding:.375rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-1\.5{padding-left:.375rem;padding-right:.375rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pb-20{padding-bottom:5rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.font-sans{font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji}.text-\[10px\]{font-size:10px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.leading-relaxed{line-height:1.625}.tracking-wide{letter-spacing:.025em}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6/var(--tw-text-opacity,1))}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246/var(--tw-text-opacity,1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216/var(--tw-text-opacity,1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219/var(--tw-text-opacity,1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175/var(--tw-text-opacity,1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity,1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99/var(--tw-text-opacity,1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81/var(--tw-text-opacity,1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55/var(--tw-text-opacity,1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74/var(--tw-text-opacity,1))}.text-green-700{--tw-text-opacity:1;color:rgb(21 128 61/var(--tw-text-opacity,1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234/var(--tw-text-opacity,1))}.text-purple-700{--tw-text-opacity:1;color:rgb(126 34 206/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-2xl,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.outline-none{outline:2px solid transparent;outline-offset:2px}.ring-1{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.ring-blue-200{--tw-ring-opacity:1;--tw-ring-color:rgb(191 219 254/var(--tw-ring-opacity,1))}.ring-gray-200{--tw-ring-opacity:1;--tw-ring-color:rgb(229 231 235/var(--tw-ring-opacity,1))}.ring-gray-200\/70{--tw-ring-color:rgba(229,231,235,.7)}.ring-gray-200\/80{--tw-ring-color:rgba(229,231,235,.8)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.first\:rounded-tl-2xl:first-child{border-top-left-radius:1rem}.last\:border-0:last-child{border-width:0}.hover\:bg-blue-50:hover{--tw-bg-opacity:1;background-color:rgb(239 246 255/var(--tw-bg-opacity,1))}.hover\:bg-blue-600:hover{--tw-bg-opacity:1;background-color:rgb(37 99 235/var(--tw-bg-opacity,1))}.hover\:bg-gray-200:hover{--tw-bg-opacity:1;background-color:rgb(229 231 235/var(--tw-bg-opacity,1))}.hover\:bg-gray-50\/80:hover{background-color:rgba(249,250,251,.8)}.hover\:bg-gray-800:hover{--tw-bg-opacity:1;background-color:rgb(31 41 55/var(--tw-bg-opacity,1))}.hover\:text-blue-600:hover{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.hover\:text-blue-700:hover{--tw-text-opacity:1;color:rgb(29 78 216/var(--tw-text-opacity,1))}.hover\:text-gray-500:hover{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity,1))}.hover\:text-gray-800:hover{--tw-text-opacity:1;color:rgb(31 41 55/var(--tw-text-opacity,1))}.hover\:text-red-500:hover{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.focus\:border-blue-400:focus{--tw-border-opacity:1;border-color:rgb(96 165 250/var(--tw-border-opacity,1))}.focus\:bg-blue-50\/40:focus{background-color:rgba(239,246,255,.4)}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-blue-100:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(219 234 254/var(--tw-ring-opacity,1))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95}.active\:scale-95:active,.active\:scale-\[0\.99\]:active{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.active\:scale-\[0\.99\]:active{--tw-scale-x:0.99;--tw-scale-y:0.99}.disabled\:opacity-40:disabled{opacity:.4}</style>
+  <style>
+    #root:empty::before{content:"加载中…";display:flex;align-items:center;justify-content:center;height:100vh;color:#6b7280;font:600 15px system-ui,sans-serif;}
+    .pb-safe { padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); }
+    html { height: 100%; }
+    body { min-height: 100%; }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+    .accounting-table { width: auto; table-layout: auto; }
+    .accounting-table th,
+    .accounting-table td.data-cell { white-space: nowrap; overflow: visible; }
+    .accounting-table input.cell-input {
+      overflow: visible;
+      text-overflow: clip;
+      width: auto;
+      max-width: none;
+      box-sizing: content-box;
+      field-sizing: content;
+    }
+    .picker-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: none;
+    }
+    .picker-wrap .picker-text {
+      min-width: 0;
+      width: auto;
+      flex: 0 1 auto;
+    }
+    .picker-arrow-btn {
+      flex: 0 0 22px;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #f9fafb;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      font-size: 10px;
+    }
+    .picker-arrow-btn:hover { background: #eff6ff; color: #2563eb; border-color: #93c5fd; }
+    .picker-menu {
+      position: fixed;
+      z-index: 99999;
+      max-height: 176px;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      padding: 4px 0;
+    }
+    .picker-menu-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #374151;
+    }
+    .picker-menu-item:hover { background: #f3f4f6; }
+    .picker-menu-item.active { background: #eff6ff; color: #1d4ed8; }
+  </style>
+</head>
+<body class="bg-[#f2f2f7] m-0 p-0">
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script>
+(function () {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const COL_CONFIG = {
+  model: {
+    header: '型号',
+    placeholder: '型号',
+    min: 3,
+    align: 'left',
+    picker: true
+  },
+  length: {
+    header: '长度',
+    placeholder: '长度',
+    min: 2,
+    align: 'left',
+    picker: true
+  },
+  input: {
+    header: '投入',
+    placeholder: '0',
+    min: 2,
+    align: 'right'
+  },
+  inputWeight: {
+    header: '投入重量',
+    placeholder: '0',
+    min: 4,
+    align: 'right'
+  },
+  output: {
+    header: '产出',
+    placeholder: '0',
+    min: 2,
+    align: 'right'
+  },
+  outputWeight: {
+    header: '产出重量',
+    placeholder: '0',
+    min: 4,
+    align: 'right'
+  },
+  difference: {
+    header: '差值',
+    placeholder: '0',
+    min: 2,
+    align: 'right'
+  }
+};
+const charWeight = text => {
+  let n = 0;
+  const s = String(text);
+  for (let i = 0; i < s.length; i++) n += s.charCodeAt(i) > 127 ? 2 : 1;
+  return n;
+};
+const sortByRecent = (allItems, recentItems) => {
+  const recent = recentItems.filter(item => allItems.includes(item));
+  const rest = allItems.filter(item => !recent.includes(item));
+  return [...recent, ...rest];
+};
+
+// 有产出时自动计算差值 = 产出 - 投入；无产出则不填充
+const calcAutoDifference = (inputVal, outputVal) => {
+  if (String(outputVal).trim() === '') return '';
+  const out = Number(outputVal);
+  const inp = String(inputVal).trim() === '' ? 0 : Number(inputVal);
+  if (!Number.isFinite(out) || !Number.isFinite(inp)) return '';
+  const diff = out - inp;
+  return Number.isInteger(diff) ? String(diff) : String(parseFloat(diff.toFixed(4)));
+};
+const isRowFilled = row => {
+  if (!row) return false;
+  return !!(String(row.model || '').trim() || String(row.length || '').trim() || String(row.input || '').trim() || String(row.output || '').trim() || String(row.inputWeight || '').trim() || String(row.outputWeight || '').trim());
+};
+const countColumnValues = (rows, field) => {
+  const counts = {};
+  rows.forEach(row => {
+    const val = String(row[field] || '').trim();
+    if (!val) return;
+    counts[val] = (counts[val] || 0) + 1;
+  });
+  return counts;
+};
+const collectAutoPresetAdds = (rows, field, existing) => {
+  const counts = countColumnValues(rows, field);
+  return Object.keys(counts).filter(val => counts[val] >= 2 && !existing.includes(val));
+};
+const generateId = () => Math.random().toString(36).substr(2, 9);
+const sanitizeRow = row => ({
+  id: row && row.id ? row.id : generateId(),
+  selected: !!(row && row.selected),
+  model: row && row.model != null ? String(row.model) : '',
+  length: row && row.length != null ? String(row.length) : '',
+  input: row && row.input != null ? String(row.input) : '',
+  inputWeight: row && row.inputWeight != null ? String(row.inputWeight) : '',
+  output: row && row.output != null ? String(row.output) : '',
+  outputWeight: row && row.outputWeight != null ? String(row.outputWeight) : '',
+  difference: row && row.difference != null ? String(row.difference) : ''
+});
+const STORAGE_KEY = 'ios_accounting_data';
+const LEGACY_KEYS = {
+  models: 'ios_accounting_models',
+  lengths: 'ios_accounting_lengths',
+  rows: 'ios_accounting_rows',
+  recentModels: 'ios_accounting_recent_models',
+  recentLengths: 'ios_accounting_recent_lengths'
+};
+const loadAppCache = () => {
+  try {
+    const bundled = localStorage.getItem(STORAGE_KEY);
+    if (bundled) return JSON.parse(bundled);
+  } catch (e) {}
+  const cache = {};
+  Object.entries(LEGACY_KEYS).forEach(([field, key]) => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) cache[field] = JSON.parse(raw);
+    } catch (e) {}
+  });
+  return cache;
+};
+const saveAppCache = data => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {}
+};
+const defaultModels = ['iPhone 15', 'iPhone 15 Pro', 'MacBook Air'];
+const defaultLengths = ['10m', '20m', '50m'];
+const buildBlankRows = () => Array.from({
+  length: 15
+}).map(() => ({
+  id: generateId(),
+  selected: false,
+  model: '',
+  length: '',
+  input: '',
+  inputWeight: '',
+  output: '',
+  outputWeight: '',
+  difference: ''
+}));
+let _initState;
+const getInitState = () => {
+  if (_initState) return _initState;
+  const cache = loadAppCache();
+  let models = Array.isArray(cache.models) ? cache.models : defaultModels;
+  let lengths = Array.isArray(cache.lengths) ? cache.lengths : defaultLengths;
+  const recentModels = Array.isArray(cache.recentModels) ? cache.recentModels : [];
+  const recentLengths = Array.isArray(cache.recentLengths) ? cache.recentLengths : [];
+  let rows;
+  if (Array.isArray(cache.rows) && cache.rows.length > 0) {
+    rows = cache.rows.map(row => sanitizeRow(row));
+  } else {
+    rows = buildBlankRows();
+  }
+  const modelAdds = collectAutoPresetAdds(rows, 'model', models);
+  if (modelAdds.length) models = [...models, ...modelAdds];
+  const lengthAdds = collectAutoPresetAdds(rows, 'length', lengths);
+  if (lengthAdds.length) lengths = [...lengths, ...lengthAdds];
+  _initState = {
+    models,
+    lengths,
+    recentModels,
+    recentLengths,
+    rows
+  };
+  return _initState;
+};
+
+// 内置原生高质量 SVG 图标，脱离网络依赖
+const Icons = {
+  Settings: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    className: "w-4 h-4"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "3"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+  })),
+  Trash: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    className: "w-4 h-4"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "3 6 5 6 21 6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+  })),
+  ChevronLeft: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "3",
+    className: "w-5 h-5"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "15 18 9 12 15 6"
+  })),
+  Plus: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "3",
+    className: "w-5 h-5"
+  }, /*#__PURE__*/React.createElement("line", {
+    x1: "12",
+    y1: "5",
+    x2: "12",
+    y2: "19"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "5",
+    y1: "12",
+    x2: "19",
+    y2: "12"
+  })),
+  Calculator: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    className: "w-4 h-4"
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "4",
+    y: "2",
+    width: "16",
+    height: "20",
+    rx: "2",
+    ry: "2"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "8",
+    y1: "6",
+    x2: "16",
+    y2: "6"
+  }), /*#__PURE__*/React.createElement("line", {
+    x1: "16",
+    y1: "14",
+    x2: "16",
+    y2: "18"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"
+  })),
+  CheckSquare: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    className: "w-5 h-5"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "9 11 12 14 22 4"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+  })),
+  Square: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    className: "w-5 h-5"
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "3",
+    width: "18",
+    height: "18",
+    rx: "2",
+    ry: "2"
+  })),
+  ChevronDown: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    className: "w-3.5 h-3.5"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "6 9 12 15 18 9"
+  }))
+};
+
+// 列宽按该列最长内容计算，空行不参与以减轻首屏计算
+function useColumnWidths(rows) {
+  return React.useMemo(() => {
+    const widths = {};
+    Object.entries(COL_CONFIG).forEach(([field, cfg]) => {
+      let maxW = charWeight(cfg.header);
+      for (let i = 0; i < rows.length; i++) {
+        const raw = rows[i][field];
+        if (raw === '' || raw == null) continue;
+        const w = charWeight(String(raw));
+        if (w > maxW) maxW = w;
+      }
+      widths[field] = Math.max(cfg.min, maxW + 2, charWeight(cfg.placeholder) + 2);
+    });
+    return widths;
+  }, [rows]);
+}
+const getColumnStyle = (field, columnWidths) => {
+  const w = `${columnWidths[field]}ch`;
+  if (COL_CONFIG[field].picker) {
+    return {
+      minWidth: `calc(${w} + 30px)`
+    };
+  }
+  return {
+    minWidth: w
+  };
+};
+
+// 数字/文本输入
+const ColumnInput = React.memo(function ColumnInputImpl({
+  value,
+  onChange,
+  field,
+  columnWidths,
+  className = '',
+  ...props
+}) {
+  const cfg = COL_CONFIG[field];
+  const alignClass = cfg.align === 'right' ? 'text-right' : 'text-left';
+  const size = Math.max(columnWidths[field], charWeight(value || cfg.placeholder) + 1);
+  return /*#__PURE__*/React.createElement("input", _extends({
+    value: value,
+    onChange: onChange,
+    placeholder: cfg.placeholder,
+    size: size,
+    className: `cell-input bg-transparent outline-none px-2 py-1.5 rounded-lg select-text ${alignClass} ${className}`
+  }, props));
+});
+const PickerCell = React.memo(function PickerCellImpl({
+  value,
+  onChange,
+  onPick,
+  options,
+  field,
+  columnWidths
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [menuPos, setMenuPos] = React.useState(null);
+  const wrapRef = React.useRef(null);
+  const menuIdRef = React.useRef('picker-menu-' + generateId());
+  const cfg = COL_CONFIG[field];
+  const size = Math.max(columnWidths[field], charWeight(value || cfg.placeholder) + 1);
+  const openMenu = btn => {
+    const rect = btn.getBoundingClientRect();
+    setMenuPos({
+      top: rect.bottom + 4,
+      left: rect.left,
+      minWidth: Math.max(rect.width + 80, 140)
+    });
+    setOpen(true);
+  };
+  React.useEffect(() => {
+    if (!open) return;
+    const menuId = menuIdRef.current;
+    const onDocClick = e => {
+      const wrap = wrapRef.current;
+      const menu = document.getElementById(menuId);
+      if (wrap && wrap.contains(e.target)) return;
+      if (menu && menu.contains(e.target)) return;
+      setOpen(false);
+    };
+    const timer = setTimeout(() => document.addEventListener('click', onDocClick), 0);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', onDocClick);
+    };
+  }, [open]);
+  const selectItem = item => {
+    onChange(item);
+    onPick(item);
+    setOpen(false);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    ref: wrapRef,
+    className: "picker-wrap"
+  }, /*#__PURE__*/React.createElement("input", {
+    value: value,
+    onChange: e => onChange(e.target.value),
+    onBlur: () => {
+      if (value.trim()) onPick(value.trim());
+    },
+    placeholder: cfg.placeholder,
+    size: size,
+    className: "picker-text cell-input bg-transparent outline-none px-2 py-1.5 rounded-lg font-medium text-gray-800 focus:bg-blue-50/40 select-text"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "picker-arrow-btn",
+    "aria-label": "\u5C55\u5F00\u9009\u9879",
+    onClick: e => {
+      e.stopPropagation();
+      if (open) setOpen(false);else openMenu(e.currentTarget);
+    }
+  }, "\u25BC"), open && menuPos && ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
+    id: menuIdRef.current,
+    className: "picker-menu",
+    style: {
+      top: menuPos.top,
+      left: menuPos.left,
+      minWidth: menuPos.minWidth
+    }
+  }, options.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "px-3 py-2 text-xs text-gray-400 text-center"
+  }, "\u6682\u65E0\u9884\u9009\u9879") : options.map(item => /*#__PURE__*/React.createElement("button", {
+    key: item,
+    type: "button",
+    className: 'picker-menu-item' + (value === item ? ' active' : ''),
+    onClick: () => selectItem(item)
+  }, item))), document.body));
+});
+const App = function App() {
+  const [view, setView] = React.useState('main');
+  const [models, setModels] = React.useState(() => getInitState().models);
+  const [lengths, setLengths] = React.useState(() => getInitState().lengths);
+  const [recentModels, setRecentModels] = React.useState(() => getInitState().recentModels);
+  const [recentLengths, setRecentLengths] = React.useState(() => getInitState().recentLengths);
+  const [rows, setRows] = React.useState(() => getInitState().rows);
+  const [showSumModal, setShowSumModal] = React.useState(false);
+  const columnWidths = useColumnWidths(rows);
+  const tableModels = React.useMemo(() => sortByRecent(models, recentModels), [models, recentModels]);
+  const tableLengths = React.useMemo(() => sortByRecent(lengths, recentLengths), [lengths, recentLengths]);
+  const touchRecent = React.useCallback((type, value) => {
+    const trimmed = String(value || '').trim();
+    if (!trimmed) return;
+    if (type === 'model') {
+      setRecentModels(prev => [trimmed, ...prev.filter(item => item !== trimmed)]);
+    } else {
+      setRecentLengths(prev => [trimmed, ...prev.filter(item => item !== trimmed)]);
+    }
+  }, []);
+  const rowsPresetSynced = React.useRef(true);
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      saveAppCache({
+        models,
+        lengths,
+        rows,
+        recentModels,
+        recentLengths
+      });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [models, lengths, rows, recentModels, recentLengths]);
+  React.useEffect(() => {
+    if (rowsPresetSynced.current) {
+      rowsPresetSynced.current = false;
+      return;
+    }
+    const run = () => {
+      setModels(prev => {
+        const toAdd = collectAutoPresetAdds(rows, 'model', prev);
+        return toAdd.length ? [...prev, ...toAdd] : prev;
+      });
+      setLengths(prev => {
+        const toAdd = collectAutoPresetAdds(rows, 'length', prev);
+        return toAdd.length ? [...prev, ...toAdd] : prev;
+      });
+    };
+    const id = typeof requestIdleCallback === 'function' ? requestIdleCallback(run) : setTimeout(run, 0);
+    return () => {
+      if (typeof cancelIdleCallback === 'function') cancelIdleCallback(id);else clearTimeout(id);
+    };
+  }, [rows]);
+  const updateRow = React.useCallback((id, field, value) => {
+    setRows(prev => prev.map(row => {
+      if (row.id !== id) return row;
+      const next = {
+        ...row,
+        [field]: value
+      };
+      if (field === 'input' || field === 'output') {
+        const inputVal = field === 'input' ? value : row.input;
+        const outputVal = field === 'output' ? value : row.output;
+        next.difference = calcAutoDifference(inputVal, outputVal);
+      }
+      return next;
+    }));
+  }, []);
+  const addRow = React.useCallback(() => {
+    setRows(prev => [...prev, {
+      id: generateId(),
+      selected: false,
+      model: '',
+      length: '',
+      input: '',
+      inputWeight: '',
+      output: '',
+      outputWeight: '',
+      difference: ''
+    }]);
+  }, []);
+  const toggleRowSelection = React.useCallback(id => {
+    setRows(prev => prev.map(row => row.id === id ? {
+      ...row,
+      selected: !row.selected
+    } : row));
+  }, []);
+  const toggleAllSelection = React.useCallback(() => {
+    setRows(prev => {
+      const filled = prev.filter(isRowFilled);
+      if (filled.length === 0) return prev;
+      const allFilledChecked = filled.every(r => r.selected);
+      return prev.map(row => {
+        if (!isRowFilled(row)) return {
+          ...row,
+          selected: false
+        };
+        return {
+          ...row,
+          selected: !allFilledChecked
+        };
+      });
+    });
+  }, []);
+  const filledRows = React.useMemo(() => rows.filter(isRowFilled), [rows]);
+  const allFilledChecked = filledRows.length > 0 && filledRows.every(r => r.selected);
+  const handleClearTableData = () => {
+    if (window.confirm("确定要彻底清空当前表格上的所有记账数据吗？\n（提示：这只会清空表格，设置里的型号和长度列表会完好保留。）")) {
+      setRows(buildBlankRows());
+    }
+  };
+
+  // --- 后台设置项控制 ---
+  const addSettingItem = (type, value) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    if (type === 'model' && !models.includes(trimmed)) setModels([...models, trimmed]);
+    if (type === 'length' && !lengths.includes(trimmed)) setLengths([...lengths, trimmed]);
+  };
+  const removeSettingItem = (type, index) => {
+    if (type === 'model') setModels(models.filter((_, i) => i !== index));
+    if (type === 'length') setLengths(lengths.filter((_, i) => i !== index));
+  };
+
+  // --- 智能多行精准归类求和算法 ---
+  const selectedCount = React.useMemo(() => rows.filter(r => r.selected && isRowFilled(r)).length, [rows]);
+  const summaryData = React.useMemo(() => {
+    if (!showSumModal) return [];
+    const selectedRows = rows.filter(r => r.selected && isRowFilled(r));
+    const classificationGroups = {};
+    selectedRows.forEach(row => {
+      // 只有型号和长度两项完全相同的行，才被判定为同一项组合进行合并
+      const groupKey = `${row.model || '(未填型号)'} | ${row.length || '(未填长度)'}`;
+      if (!classificationGroups[groupKey]) {
+        classificationGroups[groupKey] = {
+          model: row.model || '(未填型号)',
+          length: row.length || '(未填长度)',
+          input: 0,
+          output: 0,
+          outputWeight: 0,
+          difference: 0,
+          count: 0,
+          hasOutput: false
+        };
+      }
+      if (String(row.output || '').trim() !== '') {
+        classificationGroups[groupKey].hasOutput = true;
+      }
+
+      // 特殊重量代入决策链：若产出重量未填写，则自动代入当前行的投入重量进行叠加
+      const isOutputWeightBlank = row.outputWeight === '' || row.outputWeight === null;
+      const validOutputWeight = isOutputWeightBlank ? Number(row.inputWeight) || 0 : Number(row.outputWeight) || 0;
+      classificationGroups[groupKey].input += Number(row.input) || 0;
+      classificationGroups[groupKey].output += rowEffectiveOutput(row);
+      classificationGroups[groupKey].outputWeight += validOutputWeight;
+      classificationGroups[groupKey].difference += rowEffectiveOutput(row) - (Number(row.input) || 0);
+      classificationGroups[groupKey].count += 1;
+    });
+    return Object.values(classificationGroups);
+  }, [rows, showSumModal]);
+
+  // --- 视图分流渲染：1. 后台配置中心 ---
+  if (view === 'settings') {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col h-screen bg-[#f2f2f7] text-gray-900 font-sans pb-safe"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200/80 sticky top-0 z-50"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setView('main'),
+      className: "text-blue-500 flex items-center font-semibold text-base"
+    }, /*#__PURE__*/React.createElement(Icons.ChevronLeft, null), " \u8FD4\u56DE"), /*#__PURE__*/React.createElement("h1", {
+      className: "text-lg font-bold text-gray-800"
+    }, "\u8BBE\u7F6E\u5907\u9009\u9879"), /*#__PURE__*/React.createElement("div", {
+      className: "w-16"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1 overflow-auto p-4 space-y-6"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-xs bg-blue-50/80 text-blue-700 p-3 rounded-2xl font-medium leading-relaxed border border-blue-100/80"
+    }, "\u6E29\u99A8\u63D0\u793A\uFF1A\u5728\u6B64\u5904\u5F55\u5165\u7684\u578B\u53F7\u4E0E\u957F\u5EA6\u5C06\u4F5C\u4E3A\u4E0B\u62C9\u83DC\u5355\u3002\u5373\u4F7F\u60A8\u5728\u4E3B\u9875\u70B9\u51FB\u4E86\u201C\u6E05\u7A7A\u201D\uFF0C\u8FD9\u91CC\u7684\u9884\u8BBE\u9879\u4E5F\u4F9D\u7136\u4F1A\u88AB\u5B89\u5168\u7559\u5B58\u3002\u8868\u683C\u4E2D\u7684\u4E0B\u62C9\u987A\u5E8F\u6309\u6700\u8FD1\u4F7F\u7528\u6392\u5217\uFF0C\u4E0D\u5F71\u54CD\u6B64\u5904\u7684\u6DFB\u52A0\u987A\u5E8F\u3002"), /*#__PURE__*/React.createElement(SettingSection, {
+      title: "\u578B\u53F7\u9884\u9009\u9879\u7BA1\u7406",
+      items: models,
+      onAdd: val => addSettingItem('model', val),
+      onRemove: idx => removeSettingItem('model', idx)
+    }), /*#__PURE__*/React.createElement(SettingSection, {
+      title: "\u957F\u5EA6\u9884\u9009\u9879\u7BA1\u7406",
+      items: lengths,
+      onAdd: val => addSettingItem('length', val),
+      onRemove: idx => removeSettingItem('length', idx)
+    })));
+  }
+
+  // --- 视图分流渲染：2. iOS 跑马灯Excel核心账本主页 ---
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col h-screen bg-[#f2f2f7] text-gray-900 font-sans pb-safe"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200/80 z-30 sticky top-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 w-32"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setView('settings'),
+    className: "text-gray-600 hover:text-blue-600 flex items-center gap-1 font-semibold text-sm transition-colors"
+  }, /*#__PURE__*/React.createElement(Icons.Settings, null), " \u8BBE\u7F6E"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleClearTableData,
+    className: "text-gray-400 hover:text-red-500 flex items-center gap-0.5 font-semibold text-sm transition-colors"
+  }, /*#__PURE__*/React.createElement(Icons.Trash, null), " \u6E05\u7A7A")), /*#__PURE__*/React.createElement("h1", {
+    className: "text-lg font-bold flex-1 text-center tracking-wide text-gray-900"
+  }, "\u751F\u4EA7\u8BB0\u8D26"), /*#__PURE__*/React.createElement("div", {
+    className: "w-32 flex justify-end"
+  }, selectedCount > 1 && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowSumModal(true),
+    className: "text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1 active:scale-95 transition-all"
+  }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u6C42\u548C"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-auto relative p-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "inline-block min-w-full rounded-2xl bg-white shadow-sm ring-1 ring-gray-200/70"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "accounting-table border-separate border-spacing-0 text-xs bg-white"
+  }, /*#__PURE__*/React.createElement("thead", {
+    className: "sticky top-0 z-20 bg-gray-50"
+  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    className: "sticky left-0 z-30 bg-gray-50 px-1.5 py-2 w-11 text-center border-b border-r border-gray-200/90 first:rounded-tl-2xl"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: toggleAllSelection,
+    className: "text-blue-500 hover:text-blue-700 transition-colors"
+  }, allFilledChecked ? /*#__PURE__*/React.createElement(Icons.CheckSquare, null) : /*#__PURE__*/React.createElement(Icons.Square, null))), Object.entries(COL_CONFIG).map(([field, cfg], idx, arr) => /*#__PURE__*/React.createElement("th", {
+    key: field,
+    className: `px-2 py-2 font-semibold text-gray-600 border-b border-gray-200/90 data-cell ${cfg.align === 'right' ? 'text-right' : 'text-left'} ${idx === arr.length - 1 ? 'rounded-tr-2xl' : ''}`,
+    style: getColumnStyle(field, columnWidths)
+  }, cfg.header)))), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, index) => /*#__PURE__*/React.createElement("tr", {
+    key: row.id,
+    className: row.selected ? 'bg-blue-50/50' : ''
+  }, /*#__PURE__*/React.createElement("td", {
+    className: `sticky left-0 z-10 px-1.5 py-1 text-center border-b border-r border-gray-200/80 ${row.selected ? 'bg-blue-50/90' : 'bg-white'} ${index === rows.length - 1 ? 'rounded-bl-2xl' : ''}`
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-center gap-0.5"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => toggleRowSelection(row.id),
+    className: `flex-shrink-0 transition-colors ${row.selected ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`
+  }, row.selected ? /*#__PURE__*/React.createElement(Icons.CheckSquare, null) : /*#__PURE__*/React.createElement(Icons.Square, null)), /*#__PURE__*/React.createElement("span", {
+    className: "text-gray-400 font-mono text-[10px] w-4 font-semibold"
+  }, index + 1))), /*#__PURE__*/React.createElement("td", {
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
+    style: getColumnStyle('model', columnWidths)
+  }, /*#__PURE__*/React.createElement(PickerCell, {
+    field: "model",
+    value: row.model,
+    options: tableModels,
+    columnWidths: columnWidths,
+    onChange: val => updateRow(row.id, 'model', val),
+    onPick: val => touchRecent('model', val)
+  })), /*#__PURE__*/React.createElement("td", {
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
+    style: getColumnStyle('length', columnWidths)
+  }, /*#__PURE__*/React.createElement(PickerCell, {
+    field: "length",
+    value: row.length,
+    options: tableLengths,
+    columnWidths: columnWidths,
+    onChange: val => updateRow(row.id, 'length', val),
+    onPick: val => touchRecent('length', val)
+  })), /*#__PURE__*/React.createElement("td", {
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
+    style: getColumnStyle('input', columnWidths)
+  }, /*#__PURE__*/React.createElement(ColumnInput, {
+    type: "number",
+    field: "input",
+    value: row.input,
+    columnWidths: columnWidths,
+    onChange: e => updateRow(row.id, 'input', e.target.value),
+    className: "font-semibold text-blue-600 focus:bg-blue-50/40"
+  })), /*#__PURE__*/React.createElement("td", {
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
+    style: getColumnStyle('inputWeight', columnWidths)
+  }, /*#__PURE__*/React.createElement(ColumnInput, {
+    type: "number",
+    field: "inputWeight",
+    value: row.inputWeight,
+    columnWidths: columnWidths,
+    onChange: e => updateRow(row.id, 'inputWeight', e.target.value),
+    className: "font-semibold text-amber-600 focus:bg-blue-50/40"
+  })), /*#__PURE__*/React.createElement("td", {
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
+    style: getColumnStyle('output', columnWidths)
+  }, /*#__PURE__*/React.createElement(ColumnInput, {
+    type: "number",
+    field: "output",
+    value: row.output,
+    columnWidths: columnWidths,
+    onChange: e => updateRow(row.id, 'output', e.target.value),
+    className: "font-semibold text-green-600 focus:bg-blue-50/40"
+  })), /*#__PURE__*/React.createElement("td", {
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
+    style: getColumnStyle('outputWeight', columnWidths)
+  }, /*#__PURE__*/React.createElement(ColumnInput, {
+    type: "number",
+    field: "outputWeight",
+    value: row.outputWeight,
+    columnWidths: columnWidths,
+    onChange: e => updateRow(row.id, 'outputWeight', e.target.value),
+    className: "font-semibold text-purple-600 focus:bg-blue-50/40"
+  })), /*#__PURE__*/React.createElement("td", {
+    className: `px-1 py-0.5 border-b border-gray-200/80 data-cell ${index === rows.length - 1 ? 'rounded-br-2xl' : ''}`,
+    style: getColumnStyle('difference', columnWidths)
+  }, /*#__PURE__*/React.createElement(ColumnInput, {
+    type: "number",
+    field: "difference",
+    value: row.difference,
+    columnWidths: columnWidths,
+    onChange: e => updateRow(row.id, 'difference', e.target.value),
+    className: "font-bold text-gray-900 focus:bg-blue-50/40"
+  }))))))), /*#__PURE__*/React.createElement("div", {
+    className: "p-5 flex justify-center pb-20"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: addRow,
+    className: "flex items-center gap-2 text-blue-600 font-semibold py-2.5 px-6 rounded-full bg-white border border-blue-100 hover:bg-blue-50 transition-all shadow-sm active:scale-95"
+  }, /*#__PURE__*/React.createElement(Icons.Plus, null), " \u9012\u589E\u4E00\u884C"))), showSumModal && /*#__PURE__*/React.createElement(SumModal, {
+    rows: rows,
+    selectedCount: selectedCount,
+    summaryData: summaryData,
+    onClose: () => setShowSumModal(false)
+  }));
+}
+
+// 求和：整数显示
+function formatSumInt(num) {
+  const n = Number(num);
+  if (!Number.isFinite(n)) return '0';
+  return String(Math.round(n));
+}
+
+// 求和：重量保留三位小数
+function formatSumWeight(num) {
+  const n = Number(num);
+  if (!Number.isFinite(n)) return '0.000';
+  return n.toFixed(3);
+}
+const rowOutputWeight = row => {
+  const isBlank = row.outputWeight === '' || row.outputWeight == null;
+  return isBlank ? Number(row.inputWeight) || 0 : Number(row.outputWeight) || 0;
+};
+
+// 无产出时按投入计入总产出
+const rowEffectiveOutput = row => {
+  if (String(row.output || '').trim() !== '') return Number(row.output) || 0;
+  return Number(row.input) || 0;
+};
+const computeGrandTotal = selectedRows => {
+  let input = 0,
+    output = 0,
+    outputWeight = 0,
+    allHaveOutput = true;
+  selectedRows.forEach(row => {
+    input += Number(row.input) || 0;
+    output += rowEffectiveOutput(row);
+    if (String(row.output || '').trim() === '') allHaveOutput = false;
+    outputWeight += rowOutputWeight(row);
+  });
+  return {
+    input,
+    output,
+    outputWeight,
+    allHaveOutput
+  };
+};
+const getModelsWithMultipleLengths = summaryData => {
+  const modelLengths = {};
+  summaryData.forEach(group => {
+    const model = group.model;
+    const length = group.length || '(未填长度)';
+    if (!modelLengths[model]) modelLengths[model] = new Set();
+    modelLengths[model].add(length);
+  });
+  const multi = new Set();
+  Object.keys(modelLengths).forEach(model => {
+    if (modelLengths[model].size > 1) multi.add(model);
+  });
+  return multi;
+};
+const formatGroupText = (group, modelsWithMultiLength) => {
+  let label = group.model;
+  if (modelsWithMultiLength.has(group.model)) {
+    const len = group.length && group.length !== '(未填长度)' ? group.length : '未填长度';
+    label += '(' + len + ')';
+  }
+  const inputStr = formatSumInt(group.input);
+  const outputPrefix = group.hasOutput ? '产出' : '预计产出';
+  const outputStr = formatSumInt(group.output);
+  const diff = Number(group.difference) || 0;
+  let diffPart = '';
+  if (diff < 0) diffPart = '废' + formatSumInt(Math.abs(diff));else if (diff > 0) diffPart = '多' + formatSumInt(diff);
+  const weightStr = formatSumWeight(group.outputWeight);
+  return label + '投入' + inputStr + outputPrefix + outputStr + (diffPart ? diffPart : '') + '实' + weightStr;
+};
+const formatGrandTotalTextLines = total => {
+  const outputLabel = total.allHaveOutput ? '总产出' : '预计总产';
+  return ['总投入' + formatSumInt(total.input), outputLabel + formatSumInt(total.output), '总重' + formatSumWeight(total.outputWeight)];
+};
+const buildSumTextContent = (summaryData, allFilledSelected, grandTotal) => {
+  const modelsWithMultiLength = getModelsWithMultipleLengths(summaryData);
+  const lines = summaryData.map(group => formatGroupText(group, modelsWithMultiLength));
+  if (allFilledSelected) lines.push(...formatGrandTotalTextLines(grandTotal));
+  return lines.join('\n');
+};
+
+// 求和弹窗
+const SumModal = function SumModal({
+  rows,
+  selectedCount,
+  summaryData,
+  onClose
+}) {
+  const [viewMode, setViewMode] = React.useState('table');
+  const [copied, setCopied] = React.useState(false);
+  const filledRows = React.useMemo(() => rows.filter(isRowFilled), [rows]);
+  const allFilledSelected = filledRows.length > 0 && filledRows.every(r => r.selected);
+  const selectedRows = React.useMemo(() => rows.filter(r => r.selected && isRowFilled(r)), [rows]);
+  const grandTotal = React.useMemo(() => computeGrandTotal(selectedRows), [selectedRows]);
+  const textContent = React.useMemo(() => buildSumTextContent(summaryData, allFilledSelected, grandTotal), [summaryData, allFilledSelected, grandTotal]);
+  const copyText = async () => {
+    if (!textContent) return;
+    try {
+      await navigator.clipboard.writeText(textContent);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = textContent;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden ring-1 ring-gray-200/80"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "p-4 border-b border-gray-100 bg-gray-50/80 space-y-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold text-gray-900"
+  }, "\u6C42\u548C\u5206\u9879\u6E05\u5355 (\u5171\u9009 ", selectedCount, " \u884C)"), /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "text-gray-500 hover:text-gray-800 bg-gray-200/60 hover:bg-gray-200 rounded-full px-3 py-1 text-xs font-semibold transition-colors"
+  }, "\u5173\u95ED")), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setViewMode('table'),
+    className: 'flex-1 py-2 rounded-xl text-xs font-semibold transition-colors ' + (viewMode === 'table' ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200')
+  }, "\u8868\u683C\u5C55\u793A"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setViewMode('text'),
+    className: 'flex-1 py-2 rounded-xl text-xs font-semibold transition-colors ' + (viewMode === 'text' ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200')
+  }, "\u6587\u5B57\u5C55\u793A"))), /*#__PURE__*/React.createElement("div", {
+    className: "overflow-auto p-4 flex-1 bg-[#f2f2f7]"
+  }, summaryData.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-gray-400 py-6 font-medium"
+  }, "\u65E0\u5408\u5E76\u9879\u6570\u636E") : viewMode === 'table' ? /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl overflow-hidden ring-1 ring-gray-200/70"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full text-xs border-collapse"
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    className: "bg-gray-50 text-gray-500"
+  }, /*#__PURE__*/React.createElement("th", {
+    className: "px-2 py-2 text-left font-semibold border-b border-gray-100"
+  }, "\u578B\u53F7"), /*#__PURE__*/React.createElement("th", {
+    className: "px-2 py-2 text-left font-semibold border-b border-gray-100"
+  }, "\u957F\u5EA6"), /*#__PURE__*/React.createElement("th", {
+    className: "px-2 py-2 text-right font-semibold border-b border-gray-100"
+  }, "\u6295\u5165"), /*#__PURE__*/React.createElement("th", {
+    className: "px-2 py-2 text-right font-semibold border-b border-gray-100"
+  }, "\u4EA7\u51FA"), /*#__PURE__*/React.createElement("th", {
+    className: "px-2 py-2 text-right font-semibold border-b border-gray-100"
+  }, "\u5DEE\u503C"), /*#__PURE__*/React.createElement("th", {
+    className: "px-2 py-2 text-right font-semibold border-b border-gray-100"
+  }, "\u91CD\u91CF"))), /*#__PURE__*/React.createElement("tbody", null, summaryData.map((group, idx) => /*#__PURE__*/React.createElement("tr", {
+    key: idx,
+    className: "border-b border-gray-50 last:border-0"
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2 font-medium text-gray-800"
+  }, group.model), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2 text-gray-600"
+  }, group.length), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2 text-right font-mono text-blue-600"
+  }, formatSumInt(group.input)), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2 text-right font-mono text-green-600"
+  }, !group.hasOutput && /*#__PURE__*/React.createElement("span", {
+    className: "text-amber-500 text-[10px] mr-0.5"
+  }, "\u9884\u8BA1"), formatSumInt(group.output)), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2 text-right font-mono text-gray-800"
+  }, formatSumInt(group.difference)), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2 text-right font-mono text-purple-600"
+  }, formatSumWeight(group.outputWeight))))), allFilledSelected && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
+    className: "bg-blue-50/80 font-bold border-t-2 border-blue-100"
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2.5 text-gray-800",
+    colSpan: "2"
+  }, "\u5408\u8BA1\uFF08\u5168\u90E8\u5DF2\u586B\u884C\uFF09"), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2.5 text-right font-mono text-blue-700"
+  }, formatSumInt(grandTotal.input)), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2.5 text-right font-mono text-green-700"
+  }, !grandTotal.allHaveOutput && /*#__PURE__*/React.createElement("span", {
+    className: "text-amber-600 text-[10px] mr-0.5"
+  }, "\u9884\u8BA1"), formatSumInt(grandTotal.output)), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2.5 text-right font-mono text-gray-700"
+  }, "\u2014"), /*#__PURE__*/React.createElement("td", {
+    className: "px-2 py-2.5 text-right font-mono text-purple-700"
+  }, formatSumWeight(grandTotal.outputWeight)))))) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: copyText,
+    className: "w-full mb-3 py-2 rounded-xl text-xs font-semibold bg-white text-blue-600 ring-1 ring-blue-200 hover:bg-blue-50 transition-colors"
+  }, copied ? '已复制' : '复制文字'), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl px-3 py-3 ring-1 ring-gray-200/70"
+  }, /*#__PURE__*/React.createElement("pre", {
+    className: "text-sm text-gray-800 leading-relaxed whitespace-pre-wrap font-sans m-0"
+  }, textContent)))), /*#__PURE__*/React.createElement("div", {
+    className: "p-4 border-t border-gray-100 bg-white/90"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onClose,
+    className: "w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl font-semibold text-sm shadow-sm transition-colors active:scale-[0.99]"
+  }, "\u6211\u77E5\u9053\u4E86"))));
+}
+
+// 设置后台：卡片条目管理组件
+const SettingSection = function SettingSection({
+  title,
+  items,
+  onAdd,
+  onRemove
+}) {
+  const [inputVal, setInputVal] = React.useState('');
+  const fireAdd = () => {
+    onAdd(inputVal);
+    setInputVal('');
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-sm ring-1 ring-gray-200/70 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-2.5 bg-gray-50/90 border-b border-gray-200/80"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-sm text-gray-700"
+  }, title)), /*#__PURE__*/React.createElement("div", {
+    className: "divide-y divide-gray-100 max-h-48 overflow-auto"
+  }, items.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-gray-400 py-4 text-xs"
+  }, "\u5217\u8868\u4E3A\u7A7A") : items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
+    key: idx,
+    className: "flex justify-between items-center px-4 py-2.5 hover:bg-gray-50/80 transition-colors"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-gray-800 font-medium text-sm"
+  }, item), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onRemove(idx),
+    className: "text-gray-400 hover:text-red-500 p-1.5 rounded-xl transition-colors"
+  }, /*#__PURE__*/React.createElement(Icons.Trash, null))))), /*#__PURE__*/React.createElement("div", {
+    className: "p-3 bg-gray-50/80 border-t border-gray-100 flex gap-2"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: inputVal,
+    onChange: e => setInputVal(e.target.value),
+    placeholder: `键入新${title.slice(0, 2)}...`,
+    className: "flex-1 px-3 py-2 border border-gray-200 bg-white rounded-xl text-sm outline-none font-medium focus:border-blue-400 focus:ring-2 focus:ring-blue-100",
+    onKeyDown: e => e.key === 'Enter' && fireAdd()
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: fireAdd,
+    disabled: !inputVal.trim(),
+    className: "px-4 py-2 bg-blue-500 text-white text-xs font-semibold rounded-xl disabled:opacity-40 hover:bg-blue-600 transition-colors"
+  }, "\u6DFB\u52A0")));
+}
+
+
+  try {
+    const container = document.getElementById('root');
+    if (!container) throw new Error('找不到 #root');
+    if (!window.React || !window.ReactDOM) throw new Error('React 未加载');
+    ReactDOM.createRoot(container).render(React.createElement(App, null));
+  } catch (err) {
+    const container = document.getElementById('root');
+    if (container) {
+      container.textContent = '启动失败：' + (err && err.message ? err.message : String(err));
+    }
+    console.error(err);
+  }
+})();
+  </script>
+</body>
+</html>
