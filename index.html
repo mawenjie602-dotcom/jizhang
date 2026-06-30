@@ -112,6 +112,56 @@
     }
     .table-row-btn-remove:hover:not(:disabled) { background: #fef2f2; }
     .table-row-btn:disabled { opacity: 0.4; cursor: default; }
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: #fff;
+      border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+      min-height: 3rem;
+    }
+    .app-header-side {
+      flex: 0 1 auto;
+      min-width: 0;
+      z-index: 1;
+    }
+    .app-header-side-left { max-width: 46%; }
+    .app-header-side-right {
+      max-width: 46%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .app-header-title {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      white-space: nowrap;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #111827;
+      font-size: clamp(0.875rem, 2.2vw + 0.65rem, 1.125rem);
+      line-height: 1.2;
+      pointer-events: none;
+    }
+    .app-header-title-nudge {
+      transform: translate(calc(-50% + 0.75rem), -50%);
+    }
+    @media (max-width: 420px) {
+      .app-header-title {
+        font-size: clamp(0.8125rem, 3.8vw, 1rem);
+      }
+      .app-header-title-nudge {
+        transform: translate(calc(-50% + 0.5rem), -50%);
+      }
+    }
   </style>
 </head>
 <body class="bg-[#f2f2f7] m-0 p-0">
@@ -741,9 +791,9 @@ const App = function App() {
   return /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col h-screen bg-[#f2f2f7] text-gray-900 font-sans pb-safe"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200/80 z-30 sticky top-0"
+    className: "app-header"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-3 w-32"
+    className: "app-header-side app-header-side-left flex gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setView('settings'),
     className: "text-gray-600 hover:text-blue-600 flex items-center gap-1 font-semibold text-sm transition-colors"
@@ -751,9 +801,9 @@ const App = function App() {
     onClick: handleClearTableData,
     className: "text-gray-400 hover:text-red-500 flex items-center gap-0.5 font-semibold text-sm transition-colors"
   }, /*#__PURE__*/React.createElement(Icons.Trash, null), " \u6E05\u7A7A")), /*#__PURE__*/React.createElement("h1", {
-    className: "text-lg font-bold flex-1 text-center tracking-wide text-gray-900"
+    className: "app-header-title" + (selectedCount > 1 ? "" : " app-header-title-nudge")
   }, "\u751F\u4EA7\u8BB0\u8D26"), /*#__PURE__*/React.createElement("div", {
-    className: "w-32 flex justify-end"
+    className: "app-header-side app-header-side-right"
   }, selectedCount > 1 && /*#__PURE__*/React.createElement("button", {
     onClick: () => setShowSumModal(true),
     className: "text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1 active:scale-95 transition-all"
