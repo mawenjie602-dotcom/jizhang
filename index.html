@@ -186,6 +186,12 @@ const COL_CONFIG = {
     align: 'left',
     picker: true
   },
+  unitWeight: {
+    header: '单重',
+    placeholder: '0',
+    min: 2,
+    align: 'right'
+  },
   input: {
     header: '投入',
     placeholder: '0',
@@ -238,9 +244,37 @@ const calcAutoDifference = (inputVal, outputVal) => {
   const diff = out - inp;
   return Number.isInteger(diff) ? String(diff) : String(parseFloat(diff.toFixed(4)));
 };
+
+// 从长度字段提取数值（如 10m → 10）
+const parseLengthNum = (lengthVal) => {
+  const s = String(lengthVal || '').trim();
+  if (!s) return NaN;
+  const m = s.match(/[\d.]+/);
+  const n = m ? Number(m[0]) : Number(s);
+  return Number.isFinite(n) ? n : NaN;
+};
+
+// 重量 = 数量 × 单重 × 长度 × 0.001
+const calcAutoWeight = (qty, unitWeight, lengthVal) => {
+  const q = String(qty || '').trim() === '' ? NaN : Number(qty);
+  const u = String(unitWeight || '').trim() === '' ? NaN : Number(unitWeight);
+  const len = parseLengthNum(lengthVal);
+  if (!Number.isFinite(q) || !Number.isFinite(u) || !Number.isFinite(len)) return '';
+  const w = q * u * len * 0.001;
+  return Number.isFinite(w) ? String(parseFloat(w.toFixed(3))) : '';
+};
+
+const applyAutoWeights = (row) => ({
+  ...row,
+  inputWeight: calcAutoWeight(row.input, row.unitWeight, row.length),
+  outputWeight: String(row.output || '').trim() === ''
+    ? ''
+    : calcAutoWeight(row.output, row.unitWeight, row.length)
+});
+
 const isRowFilled = row => {
   if (!row) return false;
-  return !!(String(row.model || '').trim() || String(row.length || '').trim() || String(row.input || '').trim() || String(row.output || '').trim() || String(row.inputWeight || '').trim() || String(row.outputWeight || '').trim());
+  return !!(String(row.model || '').trim() || String(row.length || '').trim() || String(row.unitWeight || '').trim() || String(row.input || '').trim() || String(row.output || '').trim() || String(row.inputWeight || '').trim() || String(row.outputWeight || '').trim());
 };
 const countColumnValues = (rows, field) => {
   const counts = {};
@@ -256,11 +290,12 @@ const collectAutoPresetAdds = (rows, field, existing) => {
   return Object.keys(counts).filter(val => counts[val] >= 2 && !existing.includes(val));
 };
 const generateId = () => Math.random().toString(36).substr(2, 9);
-const sanitizeRow = row => ({
+const sanitizeRow = row => applyAutoWeights({
   id: row && row.id ? row.id : generateId(),
   selected: !!(row && row.selected),
   model: row && row.model != null ? String(row.model) : '',
   length: row && row.length != null ? String(row.length) : '',
+  unitWeight: row && row.unitWeight != null ? String(row.unitWeight) : '',
   input: row && row.input != null ? String(row.input) : '',
   inputWeight: row && row.inputWeight != null ? String(row.inputWeight) : '',
   output: row && row.output != null ? String(row.output) : '',
@@ -303,6 +338,7 @@ const buildBlankRows = () => Array.from({
   selected: false,
   model: '',
   length: '',
+  unitWeight: '',
   input: '',
   inputWeight: '',
   output: '',
@@ -649,7 +685,7 @@ const App = function App() {
   const updateRow = React.useCallback((id, field, value) => {
     setRows(prev => prev.map(row => {
       if (row.id !== id) return row;
-      const next = {
+      let next = {
         ...row,
         [field]: value
       };
@@ -657,6 +693,9 @@ const App = function App() {
         const inputVal = field === 'input' ? value : row.input;
         const outputVal = field === 'output' ? value : row.output;
         next.difference = calcAutoDifference(inputVal, outputVal);
+      }
+      if (field === 'unitWeight' || field === 'length' || field === 'input' || field === 'output') {
+        next = applyAutoWeights(next);
       }
       return next;
     }));
@@ -667,6 +706,7 @@ const App = function App() {
       selected: false,
       model: '',
       length: '',
+      unitWeight: '',
       input: '',
       inputWeight: '',
       output: '',
@@ -862,6 +902,16 @@ const App = function App() {
     onPick: val => touchRecent('length', val)
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
+    style: getColumnStyle('unitWeight', columnWidths)
+  }, /*#__PURE__*/React.createElement(ColumnInput, {
+    type: "number",
+    field: "unitWeight",
+    value: row.unitWeight,
+    columnWidths: columnWidths,
+    onChange: e => updateRow(row.id, 'unitWeight', e.target.value),
+    className: "font-semibold text-slate-700 focus:bg-blue-50/40"
+  })), /*#__PURE__*/React.createElement("td", {
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
     style: getColumnStyle('input', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
@@ -878,8 +928,9 @@ const App = function App() {
     field: "inputWeight",
     value: row.inputWeight,
     columnWidths: columnWidths,
-    onChange: e => updateRow(row.id, 'inputWeight', e.target.value),
-    className: "font-semibold text-amber-600 focus:bg-blue-50/40"
+    readOnly: true,
+    tabIndex: -1,
+    className: "font-semibold text-amber-600 bg-amber-50/30 cursor-default"
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
     style: getColumnStyle('output', columnWidths)
@@ -898,8 +949,9 @@ const App = function App() {
     field: "outputWeight",
     value: row.outputWeight,
     columnWidths: columnWidths,
-    onChange: e => updateRow(row.id, 'outputWeight', e.target.value),
-    className: "font-semibold text-purple-600 focus:bg-blue-50/40"
+    readOnly: true,
+    tabIndex: -1,
+    className: "font-semibold text-purple-600 bg-purple-50/30 cursor-default"
   })), /*#__PURE__*/React.createElement("td", {
     className: `px-1 py-0.5 border-b border-gray-200/80 data-cell ${index === rows.length - 1 ? 'rounded-br-2xl' : ''}`,
     style: getColumnStyle('difference', columnWidths)
