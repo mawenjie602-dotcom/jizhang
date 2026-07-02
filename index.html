@@ -112,6 +112,24 @@
     }
     .table-row-btn-remove:hover:not(:disabled) { background: #fef2f2; }
     .table-row-btn:disabled { opacity: 0.4; cursor: default; }
+    .row-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: color .15s, background .15s;
+    }
+    .row-action-btn:disabled { opacity: 0.25; cursor: default; }
+    .row-action-btn-delete:not(:disabled) { color: #9ca3af; }
+    .row-action-btn-delete:not(:disabled):hover { color: #dc2626; background: #fef2f2; }
+    .row-action-btn-undo { color: #2563eb; }
+    .row-action-btn-undo:hover { color: #1d4ed8; background: #eff6ff; }
     .app-header {
       position: sticky;
       top: 0;
@@ -162,6 +180,64 @@
         transform: translate(calc(-50% + 0.5rem), -50%);
       }
     }
+    html { font-size: calc(16px * var(--app-font-scale, 1)); }
+    .font-size-slider {
+      width: 100%;
+      height: 6px;
+      margin: 0;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .font-size-preview {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      text-align: center;
+      font-weight: 600;
+    }
+    .font-size-default-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid #bfdbfe;
+      background: #fff;
+      color: #2563eb;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .font-size-default-btn:hover { background: #eff6ff; color: #1d4ed8; }
+    .font-size-default-btn:disabled { opacity: 0.4; cursor: default; }
+    .header-sum-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      min-width: 4.25rem;
+      height: 1.875rem;
+      padding: 0 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1;
+      border: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
+      cursor: pointer;
+      color: #fff;
+      white-space: nowrap;
+      transition: background .15s, transform .15s;
+    }
+    .header-sum-btn:active { transform: scale(.95); }
+    .header-sum-btn-total { background: #16a34a; }
+    .header-sum-btn-total:hover { background: #15803d; }
+    .header-sum-btn-sum { background: #3b82f6; }
+    .header-sum-btn-sum:hover { background: #2563eb; }
   </style>
 </head>
 <body class="bg-[#f2f2f7] m-0 p-0">
@@ -170,7 +246,25 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script>
 (function () {
+try {
+  const raw = localStorage.getItem('ios_accounting_data');
+  if (raw) {
+    const cached = JSON.parse(raw);
+    const scale = Number(cached.fontScale);
+    if (Number.isFinite(scale)) {
+      document.documentElement.style.setProperty('--app-font-scale', String(Math.min(1.25, Math.max(0.85, scale))));
+    }
+  }
+} catch (e) {}
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const DEFAULT_FONT_SCALE = 1;
+const MIN_FONT_SCALE = 0.85;
+const MAX_FONT_SCALE = 1.25;
+const clampFontScale = value => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return DEFAULT_FONT_SCALE;
+  return Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, n));
+};
 const COL_CONFIG = {
   model: {
     header: '型号',
@@ -271,11 +365,37 @@ const applyAutoWeights = (row) => ({
     ? ''
     : calcAutoWeight(row.output, row.unitWeight, row.length)
 });
+const applyAutoRow = row => ({
+  ...applyAutoWeights(row),
+  difference: calcAutoDifference(row.input, row.output)
+});
 
 const isRowFilled = row => {
   if (!row) return false;
   return !!(String(row.model || '').trim() || String(row.length || '').trim() || String(row.unitWeight || '').trim() || String(row.input || '').trim() || String(row.output || '').trim() || String(row.inputWeight || '').trim() || String(row.outputWeight || '').trim());
 };
+const snapshotRowData = row => ({
+  model: row.model,
+  length: row.length,
+  unitWeight: row.unitWeight,
+  input: row.input,
+  inputWeight: row.inputWeight,
+  output: row.output,
+  outputWeight: row.outputWeight,
+  difference: row.difference
+});
+const clearRowFields = row => applyAutoRow({
+  ...row,
+  selected: false,
+  model: '',
+  length: '',
+  unitWeight: '',
+  input: '',
+  inputWeight: '',
+  output: '',
+  outputWeight: '',
+  difference: ''
+});
 const countColumnValues = (rows, field) => {
   const counts = {};
   rows.forEach(row => {
@@ -290,7 +410,7 @@ const collectAutoPresetAdds = (rows, field, existing) => {
   return Object.keys(counts).filter(val => counts[val] >= 2 && !existing.includes(val));
 };
 const generateId = () => Math.random().toString(36).substr(2, 9);
-const sanitizeRow = row => applyAutoWeights({
+const sanitizeRow = row => applyAutoRow({
   id: row && row.id ? row.id : generateId(),
   selected: !!(row && row.selected),
   model: row && row.model != null ? String(row.model) : '',
@@ -368,7 +488,9 @@ const getInitState = () => {
     lengths,
     recentModels,
     recentLengths,
-    rows
+    rows,
+    fontScale: clampFontScale(cache.fontScale),
+    crewName: typeof cache.crewName === 'string' ? cache.crewName : ''
   };
   return _initState;
 };
@@ -496,6 +618,17 @@ const Icons = {
     className: "w-3.5 h-3.5"
   }, /*#__PURE__*/React.createElement("polyline", {
     points: "6 9 12 15 18 9"
+  })),
+  Undo: () => /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    className: "w-4 h-4"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M3 7v6h6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"
   }))
 };
 
@@ -636,7 +769,10 @@ const App = function App() {
   const [recentModels, setRecentModels] = React.useState(() => getInitState().recentModels);
   const [recentLengths, setRecentLengths] = React.useState(() => getInitState().recentLengths);
   const [rows, setRows] = React.useState(() => getInitState().rows);
-  const [showSumModal, setShowSumModal] = React.useState(false);
+  const [fontScale, setFontScale] = React.useState(() => getInitState().fontScale);
+  const [crewName, setCrewName] = React.useState(() => getInitState().crewName);
+  const [rowUndoSnapshots, setRowUndoSnapshots] = React.useState({});
+  const [sumModalMode, setSumModalMode] = React.useState(null);
   const columnWidths = useColumnWidths(rows);
   const tableModels = React.useMemo(() => sortByRecent(models, recentModels), [models, recentModels]);
   const tableLengths = React.useMemo(() => sortByRecent(lengths, recentLengths), [lengths, recentLengths]);
@@ -650,6 +786,9 @@ const App = function App() {
     }
   }, []);
   const rowsPresetSynced = React.useRef(true);
+  React.useLayoutEffect(() => {
+    document.documentElement.style.setProperty('--app-font-scale', String(fontScale));
+  }, [fontScale]);
   React.useEffect(() => {
     const t = setTimeout(() => {
       saveAppCache({
@@ -657,11 +796,13 @@ const App = function App() {
         lengths,
         rows,
         recentModels,
-        recentLengths
+        recentLengths,
+        fontScale,
+        crewName
       });
     }, 400);
     return () => clearTimeout(t);
-  }, [models, lengths, rows, recentModels, recentLengths]);
+  }, [models, lengths, rows, recentModels, recentLengths, fontScale, crewName]);
   React.useEffect(() => {
     if (rowsPresetSynced.current) {
       rowsPresetSynced.current = false;
@@ -683,19 +824,23 @@ const App = function App() {
     };
   }, [rows]);
   const updateRow = React.useCallback((id, field, value) => {
+    if (field === 'inputWeight' || field === 'outputWeight' || field === 'difference') return;
+    setRowUndoSnapshots(prev => {
+      if (!prev[id]) return prev;
+      const next = {
+        ...prev
+      };
+      delete next[id];
+      return next;
+    });
     setRows(prev => prev.map(row => {
       if (row.id !== id) return row;
       let next = {
         ...row,
         [field]: value
       };
-      if (field === 'input' || field === 'output') {
-        const inputVal = field === 'input' ? value : row.input;
-        const outputVal = field === 'output' ? value : row.output;
-        next.difference = calcAutoDifference(inputVal, outputVal);
-      }
       if (field === 'unitWeight' || field === 'length' || field === 'input' || field === 'output') {
-        next = applyAutoWeights(next);
+        next = applyAutoRow(next);
       }
       return next;
     }));
@@ -715,7 +860,45 @@ const App = function App() {
     }]);
   }, []);
   const removeRow = React.useCallback(() => {
-    setRows(prev => prev.length <= 1 ? prev : prev.slice(0, -1));
+    setRows(prev => {
+      if (prev.length <= 1) return prev;
+      const removedId = prev[prev.length - 1].id;
+      setRowUndoSnapshots(snap => {
+        if (!snap[removedId]) return snap;
+        const next = {
+          ...snap
+        };
+        delete next[removedId];
+        return next;
+      });
+      return prev.slice(0, -1);
+    });
+  }, []);
+  const handleClearRow = React.useCallback(id => {
+    setRows(prev => {
+      const row = prev.find(r => r.id === id);
+      if (!row || !isRowFilled(row)) return prev;
+      setRowUndoSnapshots(snap => ({
+        ...snap,
+        [id]: snapshotRowData(row)
+      }));
+      return prev.map(r => r.id === id ? clearRowFields(r) : r);
+    });
+  }, []);
+  const handleUndoRow = React.useCallback(id => {
+    setRowUndoSnapshots(prev => {
+      const snap = prev[id];
+      if (!snap) return prev;
+      setRows(rows => rows.map(r => r.id === id ? applyAutoRow({
+        ...r,
+        ...snap
+      }) : r));
+      const next = {
+        ...prev
+      };
+      delete next[id];
+      return next;
+    });
   }, []);
   const toggleRowSelection = React.useCallback(id => {
     setRows(prev => prev.map(row => row.id === id ? {
@@ -745,6 +928,7 @@ const App = function App() {
   const handleClearTableData = () => {
     if (window.confirm("确定要彻底清空当前表格上的所有记账数据吗？\n（提示：这只会清空表格，设置里的型号和长度列表会完好保留。）")) {
       setRows(buildBlankRows());
+      setRowUndoSnapshots({});
     }
   };
 
@@ -763,7 +947,7 @@ const App = function App() {
   // --- 智能多行精准归类求和算法 ---
   const selectedCount = React.useMemo(() => rows.filter(r => r.selected && isRowFilled(r)).length, [rows]);
   const summaryData = React.useMemo(() => {
-    if (!showSumModal) return [];
+    if (!sumModalMode) return [];
     const selectedRows = rows.filter(r => r.selected && isRowFilled(r));
     const classificationGroups = {};
     selectedRows.forEach(row => {
@@ -795,7 +979,7 @@ const App = function App() {
       classificationGroups[groupKey].count += 1;
     });
     return Object.values(classificationGroups);
-  }, [rows, showSumModal]);
+  }, [rows, sumModalMode]);
 
   // --- 视图分流渲染：1. 后台配置中心 ---
   if (view === 'settings') {
@@ -814,7 +998,13 @@ const App = function App() {
       className: "flex-1 overflow-auto p-4 space-y-6"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-xs bg-blue-50/80 text-blue-700 p-3 rounded-2xl font-medium leading-relaxed border border-blue-100/80"
-    }, "\u6E29\u99A8\u63D0\u793A\uFF1A\u5728\u6B64\u5904\u5F55\u5165\u7684\u578B\u53F7\u4E0E\u957F\u5EA6\u5C06\u4F5C\u4E3A\u4E0B\u62C9\u83DC\u5355\u3002\u5373\u4F7F\u60A8\u5728\u4E3B\u9875\u70B9\u51FB\u4E86\u201C\u6E05\u7A7A\u201D\uFF0C\u8FD9\u91CC\u7684\u9884\u8BBE\u9879\u4E5F\u4F9D\u7136\u4F1A\u88AB\u5B89\u5168\u7559\u5B58\u3002\u8868\u683C\u4E2D\u7684\u4E0B\u62C9\u987A\u5E8F\u6309\u6700\u8FD1\u4F7F\u7528\u6392\u5217\uFF0C\u4E0D\u5F71\u54CD\u6B64\u5904\u7684\u6DFB\u52A0\u987A\u5E8F\u3002"), /*#__PURE__*/React.createElement(SettingSection, {
+    }, "\u6E29\u99A8\u63D0\u793A\uFF1A\u5728\u6B64\u5904\u5F55\u5165\u7684\u578B\u53F7\u4E0E\u957F\u5EA6\u5C06\u4F5C\u4E3A\u4E0B\u62C9\u83DC\u5355\u3002\u5373\u4F7F\u60A8\u5728\u4E3B\u9875\u70B9\u51FB\u4E86\u201C\u6E05\u7A7A\u201D\uFF0C\u8FD9\u91CC\u7684\u9884\u8BBE\u9879\u4E5F\u4F9D\u7136\u4F1A\u88AB\u5B89\u5168\u7559\u5B58\u3002\u8868\u683C\u4E2D\u7684\u4E0B\u62C9\u987A\u5E8F\u6309\u6700\u8FD1\u4F7F\u7528\u6392\u5217\uFF0C\u4E0D\u5F71\u54CD\u6B64\u5904\u7684\u6DFB\u52A0\u987A\u5E8F\u3002"), /*#__PURE__*/React.createElement(FontSizeSetting, {
+      value: fontScale,
+      onChange: setFontScale
+    }), /*#__PURE__*/React.createElement(CrewSetting, {
+      value: crewName,
+      onChange: setCrewName
+    }), /*#__PURE__*/React.createElement(SettingSection, {
       title: "\u578B\u53F7\u9884\u9009\u9879\u7BA1\u7406",
       items: models,
       onAdd: val => addSettingItem('model', val),
@@ -844,10 +1034,18 @@ const App = function App() {
     className: "app-header-title" + (selectedCount > 1 ? "" : " app-header-title-nudge")
   }, "\u751F\u4EA7\u8BB0\u8D26"), /*#__PURE__*/React.createElement("div", {
     className: "app-header-side app-header-side-right"
-  }, selectedCount > 1 && /*#__PURE__*/React.createElement("button", {
-    onClick: () => setShowSumModal(true),
-    className: "text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1 active:scale-95 transition-all"
-  }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u6C42\u548C"))), /*#__PURE__*/React.createElement("div", {
+  }, selectedCount > 1 && (allFilledChecked ? /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSumModalMode('total'),
+    className: "header-sum-btn header-sum-btn-total"
+  }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u603B\u4EA7"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSumModalMode('sum'),
+    className: "header-sum-btn header-sum-btn-sum"
+  }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u6C42\u548C")) : /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSumModalMode('sum'),
+    className: "header-sum-btn header-sum-btn-sum"
+  }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u6C42\u548C")))), /*#__PURE__*/React.createElement("div", {
     className: "table-page-body"
   }, /*#__PURE__*/React.createElement("div", {
     className: "table-scroll-y"
@@ -866,9 +1064,11 @@ const App = function App() {
     className: "text-blue-500 hover:text-blue-700 transition-colors"
   }, allFilledChecked ? /*#__PURE__*/React.createElement(Icons.CheckSquare, null) : /*#__PURE__*/React.createElement(Icons.Square, null))), Object.entries(COL_CONFIG).map(([field, cfg], idx, arr) => /*#__PURE__*/React.createElement("th", {
     key: field,
-    className: `px-2 py-2 font-semibold text-gray-600 border-b border-gray-200/90 data-cell ${cfg.align === 'right' ? 'text-right' : 'text-left'} ${idx === arr.length - 1 ? 'rounded-tr-2xl' : ''}`,
+    className: `px-2 py-2 font-semibold text-gray-600 border-b border-gray-200/90 data-cell ${cfg.align === 'right' ? 'text-right' : 'text-left'}`,
     style: getColumnStyle(field, columnWidths)
-  }, cfg.header)))), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, index) => /*#__PURE__*/React.createElement("tr", {
+  }, cfg.header))), /*#__PURE__*/React.createElement("th", {
+    className: "px-1 py-2 w-8 border-b border-gray-200/90 rounded-tr-2xl"
+  })), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, index) => /*#__PURE__*/React.createElement("tr", {
     key: row.id,
     className: row.selected ? 'bg-blue-50/50' : ''
   }, /*#__PURE__*/React.createElement("td", {
@@ -953,16 +1153,32 @@ const App = function App() {
     tabIndex: -1,
     className: "font-semibold text-purple-600 bg-purple-50/30 cursor-default"
   })), /*#__PURE__*/React.createElement("td", {
-    className: `px-1 py-0.5 border-b border-gray-200/80 data-cell ${index === rows.length - 1 ? 'rounded-br-2xl' : ''}`,
+    className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
     style: getColumnStyle('difference', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
     field: "difference",
     value: row.difference,
     columnWidths: columnWidths,
-    onChange: e => updateRow(row.id, 'difference', e.target.value),
-    className: "font-bold text-gray-900 focus:bg-blue-50/40"
-  })))))))), /*#__PURE__*/React.createElement("div", {
+    readOnly: true,
+    tabIndex: -1,
+    className: "font-bold text-gray-900 bg-gray-50/30 cursor-default"
+  })), /*#__PURE__*/React.createElement("td", {
+    className: `px-1 py-1 text-center border-b border-gray-200/80 ${index === rows.length - 1 ? 'rounded-br-2xl' : ''}`
+  }, rowUndoSnapshots[row.id] ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "row-action-btn row-action-btn-undo",
+    title: "\u64A4\u9500",
+    "aria-label": "\u64A4\u9500\u672C\u884C\u6570\u636E",
+    onClick: () => handleUndoRow(row.id)
+  }, /*#__PURE__*/React.createElement(Icons.Undo, null)) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "row-action-btn row-action-btn-delete",
+    title: "\u5220\u9664",
+    "aria-label": "\u6E05\u9664\u672C\u884C\u6570\u636E",
+    disabled: !isRowFilled(row),
+    onClick: () => handleClearRow(row.id)
+  }, /*#__PURE__*/React.createElement(Icons.Trash, null))))))))), /*#__PURE__*/React.createElement("div", {
     className: "table-action-bar"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -973,11 +1189,13 @@ const App = function App() {
     onClick: removeRow,
     disabled: rows.length <= 1,
     className: "table-row-btn table-row-btn-remove"
-  }, /*#__PURE__*/React.createElement(Icons.Minus, null), " \u9012\u51CF\u4E00\u884C")))), showSumModal && /*#__PURE__*/React.createElement(SumModal, {
+  }, /*#__PURE__*/React.createElement(Icons.Minus, null), " \u9012\u51CF\u4E00\u884C")))), sumModalMode && /*#__PURE__*/React.createElement(SumModal, {
     rows: rows,
     selectedCount: selectedCount,
     summaryData: summaryData,
-    onClose: () => setShowSumModal(false)
+    crewName: crewName,
+    displayMode: sumModalMode,
+    onClose: () => setSumModalMode(null)
   }));
 }
 
@@ -1036,14 +1254,14 @@ const getModelsWithMultipleLengths = summaryData => {
   });
   return multi;
 };
-const formatGroupText = (group, modelsWithMultiLength) => {
+const formatGroupText = (group, modelsWithMultiLength, showTotalFeatures) => {
   let label = group.model;
   if (modelsWithMultiLength.has(group.model)) {
     const len = group.length && group.length !== '(未填长度)' ? group.length : '未填长度';
     label += '(' + len + ')';
   }
   const inputStr = formatSumInt(group.input);
-  const outputPrefix = group.hasOutput ? '产出' : '预计产出';
+  const outputPrefix = showTotalFeatures && !group.hasOutput ? '预计产' : '产';
   const outputStr = formatSumInt(group.output);
   const diff = Number(group.difference) || 0;
   let diffPart = '';
@@ -1052,13 +1270,15 @@ const formatGroupText = (group, modelsWithMultiLength) => {
   return label + '投入' + inputStr + outputPrefix + outputStr + (diffPart ? diffPart : '') + '实' + weightStr;
 };
 const formatGrandTotalTextLines = total => {
-  const outputLabel = total.allHaveOutput ? '总产出' : '预计总产';
-  return ['总投入' + formatSumInt(total.input), outputLabel + formatSumInt(total.output), '总重' + formatSumWeight(total.outputWeight)];
+  const outputLabel = total.allHaveOutput ? '总产' : '预计总产';
+  return ['总投入：' + formatSumInt(total.input), outputLabel + '：' + formatSumInt(total.output), '总重：' + formatSumWeight(total.outputWeight)];
 };
-const buildSumTextContent = (summaryData, allFilledSelected, grandTotal) => {
+const buildSumTextContent = (summaryData, allFilledSelected, grandTotal, crewName, showTotalFeatures) => {
   const modelsWithMultiLength = getModelsWithMultipleLengths(summaryData);
-  const lines = summaryData.map(group => formatGroupText(group, modelsWithMultiLength));
-  if (allFilledSelected) lines.push(...formatGrandTotalTextLines(grandTotal));
+  const lines = summaryData.map(group => formatGroupText(group, modelsWithMultiLength, showTotalFeatures));
+  if (showTotalFeatures && allFilledSelected) lines.push(...formatGrandTotalTextLines(grandTotal));
+  const trimmedCrew = String(crewName || '').trim();
+  if (trimmedCrew) lines.unshift(trimmedCrew);
   return lines.join('\n');
 };
 
@@ -1067,15 +1287,19 @@ const SumModal = function SumModal({
   rows,
   selectedCount,
   summaryData,
+  crewName,
+  displayMode,
   onClose
 }) {
   const [viewMode, setViewMode] = React.useState('table');
   const [copied, setCopied] = React.useState(false);
+  const showTotalFeatures = displayMode === 'total';
+  const modalTitle = showTotalFeatures ? '总产分项清单' : '求和分项清单';
   const filledRows = React.useMemo(() => rows.filter(isRowFilled), [rows]);
   const allFilledSelected = filledRows.length > 0 && filledRows.every(r => r.selected);
   const selectedRows = React.useMemo(() => rows.filter(r => r.selected && isRowFilled(r)), [rows]);
   const grandTotal = React.useMemo(() => computeGrandTotal(selectedRows), [selectedRows]);
-  const textContent = React.useMemo(() => buildSumTextContent(summaryData, allFilledSelected, grandTotal), [summaryData, allFilledSelected, grandTotal]);
+  const textContent = React.useMemo(() => buildSumTextContent(summaryData, allFilledSelected, grandTotal, crewName, showTotalFeatures), [summaryData, allFilledSelected, grandTotal, crewName, showTotalFeatures]);
   const copyText = async () => {
     if (!textContent) return;
     try {
@@ -1103,7 +1327,7 @@ const SumModal = function SumModal({
     className: "flex justify-between items-center"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold text-gray-900"
-  }, "\u6C42\u548C\u5206\u9879\u6E05\u5355 (\u5171\u9009 ", selectedCount, " \u884C)"), /*#__PURE__*/React.createElement("button", {
+  }, modalTitle, " (\u5171\u9009 ", selectedCount, " \u884C)"), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     className: "text-gray-500 hover:text-gray-800 bg-gray-200/60 hover:bg-gray-200 rounded-full px-3 py-1 text-xs font-semibold transition-colors"
   }, "\u5173\u95ED")), /*#__PURE__*/React.createElement("div", {
@@ -1149,13 +1373,13 @@ const SumModal = function SumModal({
     className: "px-2 py-2 text-right font-mono text-blue-600"
   }, formatSumInt(group.input)), /*#__PURE__*/React.createElement("td", {
     className: "px-2 py-2 text-right font-mono text-green-600"
-  }, !group.hasOutput && /*#__PURE__*/React.createElement("span", {
+  }, showTotalFeatures && !group.hasOutput && /*#__PURE__*/React.createElement("span", {
     className: "text-amber-500 text-[10px] mr-0.5"
   }, "\u9884\u8BA1"), formatSumInt(group.output)), /*#__PURE__*/React.createElement("td", {
     className: "px-2 py-2 text-right font-mono text-gray-800"
   }, formatSumInt(group.difference)), /*#__PURE__*/React.createElement("td", {
     className: "px-2 py-2 text-right font-mono text-purple-600"
-  }, formatSumWeight(group.outputWeight))))), allFilledSelected && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
+  }, formatSumWeight(group.outputWeight))))), showTotalFeatures && allFilledSelected && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
     className: "bg-blue-50/80 font-bold border-t-2 border-blue-100"
   }, /*#__PURE__*/React.createElement("td", {
     className: "px-2 py-2.5 text-gray-800",
@@ -1185,6 +1409,68 @@ const SumModal = function SumModal({
     className: "w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl font-semibold text-sm shadow-sm transition-colors active:scale-[0.99]"
   }, "\u6211\u77E5\u9053\u4E86"))));
 }
+
+// 设置后台：机组名称
+const CrewSetting = function CrewSetting({
+  value,
+  onChange
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-sm ring-1 ring-gray-200/70 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-2.5 bg-gray-50/90 border-b border-gray-200/80"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-sm text-gray-700"
+  }, "\u673A\u7EC4")), /*#__PURE__*/React.createElement("div", {
+    className: "p-4"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: value,
+    onChange: e => onChange(e.target.value),
+    placeholder: "\u8F93\u5165\u673A\u7EC4\u540D\u79F0",
+    className: "w-full px-3 py-2 border border-gray-200 bg-white rounded-xl text-sm outline-none font-medium focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-gray-400 mt-2 leading-relaxed"
+  }, "\u4EC5\u5728\u6C42\u548C\u6587\u5B57\u5C55\u793A\u65F6\u663E\u793A\u5728\u7B2C\u4E00\u884C\u3002")));
+};
+
+// 设置后台：文字大小滑轨
+const FontSizeSetting = function FontSizeSetting({
+  value,
+  onChange
+}) {
+  const pct = Math.round(value * 100);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-sm ring-1 ring-gray-200/70 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-2.5 bg-gray-50/90 border-b border-gray-200/80"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-sm text-gray-700"
+  }, "\u6587\u5B57\u5927\u5C0F")), /*#__PURE__*/React.createElement("div", {
+    className: "p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-end mb-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "font-size-default-btn",
+    disabled: pct === 100,
+    onClick: () => onChange(DEFAULT_FONT_SCALE)
+  }, "\u9ED8\u8BA4")), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between text-xs text-gray-500 mb-2"
+  }, /*#__PURE__*/React.createElement("span", null, "\u5C0F"), /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold text-blue-600 text-sm"
+  }, pct, "%"), /*#__PURE__*/React.createElement("span", null, "\u5927")), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    className: "font-size-slider",
+    min: String(Math.round(MIN_FONT_SCALE * 100)),
+    max: String(Math.round(MAX_FONT_SCALE * 100)),
+    step: "1",
+    value: pct,
+    onChange: e => onChange(clampFontScale(Number(e.target.value) / 100))
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "font-size-preview text-sm"
+  }, "\u9884\u89C8\uFF1A\u751F\u4EA7\u8BB0\u8D26\u8868\u683C\u6587\u5B57")));
+};
 
 // 设置后台：卡片条目管理组件
 const SettingSection = function SettingSection({
