@@ -323,6 +323,7 @@
       transition: background .15s, transform .15s;
     }
     .header-sum-btn:active { transform: scale(.95); }
+    .header-sum-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .header-sum-btn-total { background: #16a34a; }
     .header-sum-btn-total:hover { background: #15803d; }
     .header-sum-btn-sum { background: #3b82f6; }
@@ -1126,20 +1127,17 @@ const App = function App() {
   }, /*#__PURE__*/React.createElement(Icons.Settings, null), " \u8BBE\u7F6E"), /*#__PURE__*/React.createElement("button", {
     onClick: handleClearTableData,
     className: "text-gray-400 hover:text-red-500 flex items-center gap-0.5 font-semibold text-sm transition-colors"
-  }, /*#__PURE__*/React.createElement(Icons.Trash, null), " \u6E05\u7A7A")), /*#__PURE__*/React.createElement("h1", {
-    className: "app-header-title" + (selectedCount > 1 ? "" : " app-header-title-nudge")
-  }, "\u751F\u4EA7\u8BB0\u8D26"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(Icons.Trash, null), " \u6E05\u7A7A")), /*#__PURE__*/React.createElement("div", {
     className: "app-header-side app-header-side-right"
-  }, selectedCount > 1 && (allFilledChecked ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1.5"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setSumModalMode('total'),
+    disabled: !allFilledChecked,
     className: "header-sum-btn header-sum-btn-total"
   }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u603B\u4EA7"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setSumModalMode('sum'),
-    className: "header-sum-btn header-sum-btn-sum"
-  }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u6C42\u548C")) : /*#__PURE__*/React.createElement("button", {
-    onClick: () => setSumModalMode('sum'),
+    disabled: selectedCount < 2,
     className: "header-sum-btn header-sum-btn-sum"
   }, /*#__PURE__*/React.createElement(Icons.Calculator, null), " \u6C42\u548C")))), /*#__PURE__*/React.createElement("div", {
     className: "table-page-body"
