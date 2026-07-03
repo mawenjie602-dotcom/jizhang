@@ -1006,12 +1006,20 @@ const renderTableColGroup = (columnWidths, pixelWidths) => /*#__PURE__*/React.cr
   className: "excel-action-col",
   style: pixelWidths ? colPxStyle(pixelWidths[pixelWidths.length - 1]) : undefined
 }));
+const getColumnWidthsKey = columnWidths => Object.keys(COL_CONFIG).map(field => `${field}:${columnWidths[field]}`).join('|');
 function useSplitTableColSync(splitStackRef, columnWidths, rows) {
-  const [pixelWidths, setPixelWidths] = React.useState(null);
+  const widthsKey = React.useMemo(() => getColumnWidthsKey(columnWidths), [columnWidths]);
+  const [syncState, setSyncState] = React.useState({
+    key: '',
+    widths: null
+  });
   React.useLayoutEffect(() => {
     const stack = splitStackRef.current;
     if (!stack || rows.length === 0) {
-      setPixelWidths(null);
+      setSyncState({
+        key: widthsKey,
+        widths: null
+      });
       return;
     }
     const bodyRow = stack.querySelector('.accounting-table-body tbody tr');
@@ -1019,14 +1027,12 @@ function useSplitTableColSync(splitStackRef, columnWidths, rows) {
     const cells = [...bodyRow.children];
     if (cells.length < 10) return;
     const measured = cells.map(cell => cell.getBoundingClientRect().width);
-    setPixelWidths(prev => {
-      if (prev && prev.length === measured.length && prev.every((width, index) => Math.abs(width - measured[index]) < 0.5)) {
-        return prev;
-      }
-      return measured;
+    setSyncState({
+      key: widthsKey,
+      widths: measured
     });
-  }, [splitStackRef, columnWidths, rows]);
-  return pixelWidths;
+  }, [splitStackRef, widthsKey, rows]);
+  return syncState.key === widthsKey ? syncState.widths : null;
 }
 
 // 数字/文本输入
