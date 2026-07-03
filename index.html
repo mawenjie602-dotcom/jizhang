@@ -147,25 +147,37 @@
     .picker-menu-item:hover { background: #f3f4f6; }
     .picker-menu-item.active { background: #eff6ff; color: #1d4ed8; }
     .table-page-body { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
-    .table-scroll-y { flex: 1 1 0; min-height: 0; overflow: auto; padding: 0.75rem; -webkit-overflow-scrolling: touch; }
+    .table-scroll-y { flex: 1 1 0; min-height: 0; overflow: auto; padding: 0.75rem; }
     .table-scroll-x { overflow: visible; width: 100%; }
-    .accounting-table thead th {
+    /* Safari/iOS 对 table 内 th 的 sticky 支持差，用外层 div 吸顶 */
+    .table-head-sticky {
+      position: -webkit-sticky;
       position: sticky;
       top: 0;
+      z-index: 30;
+      background: #fff;
+    }
+    .accounting-table-head,
+    .accounting-table-body {
+      table-layout: fixed;
+      width: max-content;
+      min-width: 100%;
+    }
+    .accounting-table thead th {
       z-index: 20;
       background: #f9fafb;
     }
     .accounting-table thead th.col-header-input {
-      position: sticky;
-      top: 0;
       z-index: 22;
       background: #f9fafb;
       box-shadow: inset 0 -1px 0 rgba(229, 231, 235, 0.9);
     }
     .accounting-table thead th.sticky-col-check {
+      position: -webkit-sticky;
+      position: sticky;
       left: 0;
-      top: 0;
       z-index: 40;
+      background: #f9fafb;
     }
     .table-action-bar-sticky {
       position: sticky;
@@ -788,6 +800,29 @@ const getColumnStyle = (field, columnWidths) => {
     minWidth: w
   };
 };
+const getColWidthStyle = (field, columnWidths) => {
+  const w = `${columnWidths[field]}ch`;
+  if (COL_CONFIG[field].picker) {
+    return {
+      width: `calc(${w} + 30px)`
+    };
+  }
+  return {
+    width: w
+  };
+};
+const renderTableColGroup = columnWidths => /*#__PURE__*/React.createElement("colgroup", null, /*#__PURE__*/React.createElement("col", {
+  style: {
+    width: '2.75rem'
+  }
+}), Object.keys(COL_CONFIG).map(field => /*#__PURE__*/React.createElement("col", {
+  key: field,
+  style: getColWidthStyle(field, columnWidths)
+})), /*#__PURE__*/React.createElement("col", {
+  style: {
+    width: '2rem'
+  }
+}));
 
 // 数字/文本输入
 const ColumnInput = React.memo(function ColumnInputImpl({
@@ -1173,9 +1208,11 @@ const App = function App() {
     className: "table-scroll-x"
   }, /*#__PURE__*/React.createElement("div", {
     className: "inline-block min-w-full rounded-2xl bg-white shadow-sm ring-1 ring-gray-200/70"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "table-head-sticky"
   }, /*#__PURE__*/React.createElement("table", {
-    className: "accounting-table border-separate border-spacing-0 text-xs bg-white"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    className: "accounting-table accounting-table-head border-separate border-spacing-0 text-xs bg-white"
+  }, renderTableColGroup(columnWidths), /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
     className: "sticky-col-check bg-gray-50 px-1.5 py-2 w-11 text-center border-b border-r border-gray-200/90 first:rounded-tl-2xl"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: toggleAllSelection,
@@ -1186,7 +1223,9 @@ const App = function App() {
     style: getColumnStyle(field, columnWidths)
   }, cfg.header))), /*#__PURE__*/React.createElement("th", {
     className: "px-1 py-2 w-8 border-b border-gray-200/90 rounded-tr-2xl"
-  })), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, index) => /*#__PURE__*/React.createElement("tr", {
+  })))), /*#__PURE__*/React.createElement("table", {
+    className: "accounting-table accounting-table-body border-separate border-spacing-0 text-xs bg-white"
+  }, renderTableColGroup(columnWidths), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, index) => /*#__PURE__*/React.createElement("tr", {
     key: row.id,
     className: row.selected ? 'bg-blue-50/50' : ''
   }, /*#__PURE__*/React.createElement("td", {
