@@ -147,52 +147,8 @@
     .picker-menu-item:hover { background: #f3f4f6; }
     .picker-menu-item.active { background: #eff6ff; color: #1d4ed8; }
     .table-page-body { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
-    .table-scroll-y { flex: 1 1 0; min-height: 0; overflow: auto; padding: 0.75rem; }
-    .table-scroll-x { overflow: visible; width: 100%; }
-    /* Safari/iOS 对 table 内 th 的 sticky 支持差，用外层 div 吸顶 */
-    .table-head-sticky {
-      position: -webkit-sticky;
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      background: #fff;
-    }
-    .accounting-table-head,
-    .accounting-table-body {
-      table-layout: fixed;
-      width: max-content;
-      min-width: 100%;
-    }
-    .accounting-table thead th {
-      z-index: 20;
-      background: #f9fafb;
-    }
-    .accounting-table thead th.col-header-input {
-      z-index: 22;
-      background: #f9fafb;
-      box-shadow: inset 0 -1px 0 rgba(229, 231, 235, 0.9);
-    }
-    .accounting-table thead th.sticky-col-check {
-      position: -webkit-sticky;
-      position: sticky;
-      left: 0;
-      z-index: 40;
-      background: #f9fafb;
-    }
-    .table-action-bar-sticky {
-      position: sticky;
-      left: 0;
-      width: 100%;
-      max-width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 25;
-      margin-top: 1rem;
-      padding: 0.25rem 0 0.5rem;
-      box-sizing: border-box;
-      pointer-events: none;
-    }
+    .table-scroll-y { flex: 1 1 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0.75rem; }
+    .table-scroll-x { overflow-x: auto; overflow-y: visible; }
     .table-action-bar {
       display: flex;
       flex-direction: row;
@@ -200,7 +156,8 @@
       justify-content: center;
       align-items: center;
       gap: 0.75rem;
-      pointer-events: auto;
+      padding: 1rem 0 0.5rem;
+      width: 100%;
       box-sizing: border-box;
     }
     .table-row-btn {
@@ -800,29 +757,6 @@ const getColumnStyle = (field, columnWidths) => {
     minWidth: w
   };
 };
-const getColWidthStyle = (field, columnWidths) => {
-  const w = `${columnWidths[field]}ch`;
-  if (COL_CONFIG[field].picker) {
-    return {
-      width: `calc(${w} + 30px)`
-    };
-  }
-  return {
-    width: w
-  };
-};
-const renderTableColGroup = columnWidths => /*#__PURE__*/React.createElement("colgroup", null, /*#__PURE__*/React.createElement("col", {
-  style: {
-    width: '2.75rem'
-  }
-}), Object.keys(COL_CONFIG).map(field => /*#__PURE__*/React.createElement("col", {
-  key: field,
-  style: getColWidthStyle(field, columnWidths)
-})), /*#__PURE__*/React.createElement("col", {
-  style: {
-    width: '2rem'
-  }
-}));
 
 // 数字/文本输入
 const ColumnInput = React.memo(function ColumnInputImpl({
@@ -937,10 +871,6 @@ const App = function App() {
   const [rowUndoSnapshots, setRowUndoSnapshots] = React.useState({});
   const [sumModalMode, setSumModalMode] = React.useState(null);
   const columnWidths = useColumnWidths(rows);
-  const rowsRef = React.useRef(rows);
-  rowsRef.current = rows;
-  const rowUndoSnapshotsRef = React.useRef(rowUndoSnapshots);
-  rowUndoSnapshotsRef.current = rowUndoSnapshots;
   const tableModels = React.useMemo(() => sortByRecent(models, recentModels), [models, recentModels]);
   const tableLengths = React.useMemo(() => sortByRecent(lengths, recentLengths), [lengths, recentLengths]);
   const touchRecent = React.useCallback((type, value) => {
@@ -1027,33 +957,42 @@ const App = function App() {
     }]);
   }, []);
   const removeRow = React.useCallback(() => {
-    const prev = rowsRef.current;
-    if (prev.length <= 1) return;
-    const removedId = prev[prev.length - 1].id;
-    setRows(prev.slice(0, -1));
-    setRowUndoSnapshots(snap => {
-      if (!snap[removedId]) return snap;
-      const next = { ...snap };
-      delete next[removedId];
-      return next;
+    setRows(prev => {
+      if (prev.length <= 1) return prev;
+      const removedId = prev[prev.length - 1].id;
+      setRowUndoSnapshots(snap => {
+        if (!snap[removedId]) return snap;
+        const next = {
+          ...snap
+        };
+        delete next[removedId];
+        return next;
+      });
+      return prev.slice(0, -1);
     });
   }, []);
   const handleClearRow = React.useCallback(id => {
-    const row = rowsRef.current.find(r => r.id === id);
-    if (!row || !isRowFilled(row)) return;
-    setRowUndoSnapshots(snap => ({
-      ...snap,
-      [id]: snapshotRowData(row)
-    }));
-    setRows(prev => prev.map(r => r.id === id ? clearRowFields(r) : r));
+    setRows(prev => {
+      const row = prev.find(r => r.id === id);
+      if (!row || !isRowFilled(row)) return prev;
+      setRowUndoSnapshots(snap => ({
+        ...snap,
+        [id]: snapshotRowData(row)
+      }));
+      return prev.map(r => r.id === id ? clearRowFields(r) : r);
+    });
   }, []);
   const handleUndoRow = React.useCallback(id => {
-    const snap = rowUndoSnapshotsRef.current[id];
-    if (!snap) return;
-    setRows(rows => rows.map(r => r.id === id ? applyAutoRow({ ...r, ...snap }) : r));
     setRowUndoSnapshots(prev => {
-      if (!prev[id]) return prev;
-      const next = { ...prev };
+      const snap = prev[id];
+      if (!snap) return prev;
+      setRows(rows => rows.map(r => r.id === id ? applyAutoRow({
+        ...r,
+        ...snap
+      }) : r));
+      const next = {
+        ...prev
+      };
       delete next[id];
       return next;
     });
@@ -1083,7 +1022,6 @@ const App = function App() {
   }, []);
   const filledRows = React.useMemo(() => rows.filter(isRowFilled), [rows]);
   const allFilledChecked = filledRows.length > 0 && filledRows.every(r => r.selected);
-  const selectedCount = React.useMemo(() => filledRows.filter(r => r.selected).length, [filledRows]);
   const handleClearTableData = () => {
     if (window.confirm("确定要彻底清空当前表格上的所有记账数据吗？\n（提示：这只会清空表格，设置里的型号和长度列表会完好保留。）")) {
       setRows(buildBlankRows());
@@ -1104,6 +1042,7 @@ const App = function App() {
   };
 
   // --- 智能多行精准归类求和算法 ---
+  const selectedCount = React.useMemo(() => rows.filter(r => r.selected && isRowFilled(r)).length, [rows]);
   const summaryData = React.useMemo(() => {
     if (!sumModalMode) return [];
     const selectedRows = rows.filter(r => r.selected && isRowFilled(r));
@@ -1208,24 +1147,22 @@ const App = function App() {
     className: "table-scroll-x"
   }, /*#__PURE__*/React.createElement("div", {
     className: "inline-block min-w-full rounded-2xl bg-white shadow-sm ring-1 ring-gray-200/70"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "table-head-sticky"
   }, /*#__PURE__*/React.createElement("table", {
-    className: "accounting-table accounting-table-head border-separate border-spacing-0 text-xs bg-white"
-  }, renderTableColGroup(columnWidths), /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
-    className: "sticky-col-check bg-gray-50 px-1.5 py-2 w-11 text-center border-b border-r border-gray-200/90 first:rounded-tl-2xl"
+    className: "accounting-table border-separate border-spacing-0 text-xs bg-white"
+  }, /*#__PURE__*/React.createElement("thead", {
+    className: "sticky top-0 z-20 bg-gray-50"
+  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    className: "sticky left-0 z-30 bg-gray-50 px-1.5 py-2 w-11 text-center border-b border-r border-gray-200/90 first:rounded-tl-2xl"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: toggleAllSelection,
     className: "text-blue-500 hover:text-blue-700 transition-colors"
   }, allFilledChecked ? /*#__PURE__*/React.createElement(Icons.CheckSquare, null) : /*#__PURE__*/React.createElement(Icons.Square, null))), Object.entries(COL_CONFIG).map(([field, cfg], idx, arr) => /*#__PURE__*/React.createElement("th", {
     key: field,
-    className: `px-2 py-2 font-semibold text-gray-600 border-b border-gray-200/90 data-cell ${field === 'input' ? 'col-header-input' : ''} ${cfg.align === 'right' ? 'text-right' : 'text-left'}`,
+    className: `px-2 py-2 font-semibold text-gray-600 border-b border-gray-200/90 data-cell ${cfg.align === 'right' ? 'text-right' : 'text-left'}`,
     style: getColumnStyle(field, columnWidths)
   }, cfg.header))), /*#__PURE__*/React.createElement("th", {
     className: "px-1 py-2 w-8 border-b border-gray-200/90 rounded-tr-2xl"
-  })))), /*#__PURE__*/React.createElement("table", {
-    className: "accounting-table accounting-table-body border-separate border-spacing-0 text-xs bg-white"
-  }, renderTableColGroup(columnWidths), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, index) => /*#__PURE__*/React.createElement("tr", {
+  })), /*#__PURE__*/React.createElement("tbody", null, rows.map((row, index) => /*#__PURE__*/React.createElement("tr", {
     key: row.id,
     className: row.selected ? 'bg-blue-50/50' : ''
   }, /*#__PURE__*/React.createElement("td", {
@@ -1239,7 +1176,6 @@ const App = function App() {
     className: "text-gray-400 font-mono text-[10px] w-4 font-semibold"
   }, index + 1))), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('model', columnWidths)
   }, /*#__PURE__*/React.createElement(PickerCell, {
     field: "model",
     value: row.model,
@@ -1249,7 +1185,6 @@ const App = function App() {
     onPick: val => touchRecent('model', val)
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('length', columnWidths)
   }, /*#__PURE__*/React.createElement(PickerCell, {
     field: "length",
     value: row.length,
@@ -1259,7 +1194,6 @@ const App = function App() {
     onPick: val => touchRecent('length', val)
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('unitWeight', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
     field: "unitWeight",
@@ -1269,7 +1203,6 @@ const App = function App() {
     className: "font-semibold text-slate-700 focus:bg-blue-50/40"
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('input', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
     field: "input",
@@ -1279,7 +1212,6 @@ const App = function App() {
     className: "font-semibold text-blue-600 focus:bg-blue-50/40"
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('inputWeight', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
     field: "inputWeight",
@@ -1290,7 +1222,6 @@ const App = function App() {
     className: "font-semibold text-amber-600 bg-amber-50/30 cursor-default"
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('output', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
     field: "output",
@@ -1300,7 +1231,6 @@ const App = function App() {
     className: "font-semibold text-green-600 focus:bg-blue-50/40"
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('outputWeight', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
     field: "outputWeight",
@@ -1311,7 +1241,6 @@ const App = function App() {
     className: "font-semibold text-purple-600 bg-purple-50/30 cursor-default"
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 border-b border-gray-200/80 data-cell",
-    style: getColumnStyle('difference', columnWidths)
   }, /*#__PURE__*/React.createElement(ColumnInput, {
     type: "number",
     field: "difference",
@@ -1336,8 +1265,6 @@ const App = function App() {
     disabled: !isRowFilled(row),
     onClick: () => handleClearRow(row.id)
   }, /*#__PURE__*/React.createElement(Icons.Trash, null))))))))), /*#__PURE__*/React.createElement("div", {
-    className: "table-action-bar-sticky"
-  }, /*#__PURE__*/React.createElement("div", {
     className: "table-action-bar"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1348,7 +1275,7 @@ const App = function App() {
     onClick: removeRow,
     disabled: rows.length <= 1,
     className: "table-row-btn table-row-btn-remove"
-  }, /*#__PURE__*/React.createElement(Icons.Minus, null), " \u9012\u51CF\u4E00\u884C"))))), sumModalMode && /*#__PURE__*/React.createElement(SumModal, {
+  }, /*#__PURE__*/React.createElement(Icons.Minus, null), " \u9012\u51CF\u4E00\u884C")))), sumModalMode && /*#__PURE__*/React.createElement(SumModal, {
     rows: rows,
     selectedCount: selectedCount,
     summaryData: summaryData,
