@@ -156,12 +156,30 @@
       background: #f9fafb;
     }
     .accounting-table thead th.col-header-input {
+      position: sticky;
+      top: 0;
       z-index: 22;
+      background: #f9fafb;
       box-shadow: inset 0 -1px 0 rgba(229, 231, 235, 0.9);
     }
     .accounting-table thead th.sticky-col-check {
       left: 0;
+      top: 0;
       z-index: 40;
+    }
+    .table-action-bar-sticky {
+      position: sticky;
+      left: 0;
+      width: 100%;
+      max-width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 25;
+      margin-top: 1rem;
+      padding: 0.25rem 0 0.5rem;
+      box-sizing: border-box;
+      pointer-events: none;
     }
     .table-action-bar {
       display: flex;
@@ -170,8 +188,7 @@
       justify-content: center;
       align-items: center;
       gap: 0.75rem;
-      padding: 1rem 0 0.5rem;
-      width: 100%;
+      pointer-events: auto;
       box-sizing: border-box;
     }
     .table-row-btn {
@@ -885,6 +902,10 @@ const App = function App() {
   const [rowUndoSnapshots, setRowUndoSnapshots] = React.useState({});
   const [sumModalMode, setSumModalMode] = React.useState(null);
   const columnWidths = useColumnWidths(rows);
+  const rowsRef = React.useRef(rows);
+  rowsRef.current = rows;
+  const rowUndoSnapshotsRef = React.useRef(rowUndoSnapshots);
+  rowUndoSnapshotsRef.current = rowUndoSnapshots;
   const tableModels = React.useMemo(() => sortByRecent(models, recentModels), [models, recentModels]);
   const tableLengths = React.useMemo(() => sortByRecent(lengths, recentLengths), [lengths, recentLengths]);
   const touchRecent = React.useCallback((type, value) => {
@@ -971,42 +992,33 @@ const App = function App() {
     }]);
   }, []);
   const removeRow = React.useCallback(() => {
-    setRows(prev => {
-      if (prev.length <= 1) return prev;
-      const removedId = prev[prev.length - 1].id;
-      setRowUndoSnapshots(snap => {
-        if (!snap[removedId]) return snap;
-        const next = {
-          ...snap
-        };
-        delete next[removedId];
-        return next;
-      });
-      return prev.slice(0, -1);
+    const prev = rowsRef.current;
+    if (prev.length <= 1) return;
+    const removedId = prev[prev.length - 1].id;
+    setRows(prev.slice(0, -1));
+    setRowUndoSnapshots(snap => {
+      if (!snap[removedId]) return snap;
+      const next = { ...snap };
+      delete next[removedId];
+      return next;
     });
   }, []);
   const handleClearRow = React.useCallback(id => {
-    setRows(prev => {
-      const row = prev.find(r => r.id === id);
-      if (!row || !isRowFilled(row)) return prev;
-      setRowUndoSnapshots(snap => ({
-        ...snap,
-        [id]: snapshotRowData(row)
-      }));
-      return prev.map(r => r.id === id ? clearRowFields(r) : r);
-    });
+    const row = rowsRef.current.find(r => r.id === id);
+    if (!row || !isRowFilled(row)) return;
+    setRowUndoSnapshots(snap => ({
+      ...snap,
+      [id]: snapshotRowData(row)
+    }));
+    setRows(prev => prev.map(r => r.id === id ? clearRowFields(r) : r));
   }, []);
   const handleUndoRow = React.useCallback(id => {
+    const snap = rowUndoSnapshotsRef.current[id];
+    if (!snap) return;
+    setRows(rows => rows.map(r => r.id === id ? applyAutoRow({ ...r, ...snap }) : r));
     setRowUndoSnapshots(prev => {
-      const snap = prev[id];
-      if (!snap) return prev;
-      setRows(rows => rows.map(r => r.id === id ? applyAutoRow({
-        ...r,
-        ...snap
-      }) : r));
-      const next = {
-        ...prev
-      };
+      if (!prev[id]) return prev;
+      const next = { ...prev };
       delete next[id];
       return next;
     });
@@ -1036,6 +1048,7 @@ const App = function App() {
   }, []);
   const filledRows = React.useMemo(() => rows.filter(isRowFilled), [rows]);
   const allFilledChecked = filledRows.length > 0 && filledRows.every(r => r.selected);
+  const selectedCount = React.useMemo(() => filledRows.filter(r => r.selected).length, [filledRows]);
   const handleClearTableData = () => {
     if (window.confirm("确定要彻底清空当前表格上的所有记账数据吗？\n（提示：这只会清空表格，设置里的型号和长度列表会完好保留。）")) {
       setRows(buildBlankRows());
@@ -1056,7 +1069,6 @@ const App = function App() {
   };
 
   // --- 智能多行精准归类求和算法 ---
-  const selectedCount = React.useMemo(() => rows.filter(r => r.selected && isRowFilled(r)).length, [rows]);
   const summaryData = React.useMemo(() => {
     if (!sumModalMode) return [];
     const selectedRows = rows.filter(r => r.selected && isRowFilled(r));
@@ -1285,6 +1297,8 @@ const App = function App() {
     disabled: !isRowFilled(row),
     onClick: () => handleClearRow(row.id)
   }, /*#__PURE__*/React.createElement(Icons.Trash, null))))))))), /*#__PURE__*/React.createElement("div", {
+    className: "table-action-bar-sticky"
+  }, /*#__PURE__*/React.createElement("div", {
     className: "table-action-bar"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1295,7 +1309,7 @@ const App = function App() {
     onClick: removeRow,
     disabled: rows.length <= 1,
     className: "table-row-btn table-row-btn-remove"
-  }, /*#__PURE__*/React.createElement(Icons.Minus, null), " \u9012\u51CF\u4E00\u884C")))), sumModalMode && /*#__PURE__*/React.createElement(SumModal, {
+  }, /*#__PURE__*/React.createElement(Icons.Minus, null), " \u9012\u51CF\u4E00\u884C"))))), sumModalMode && /*#__PURE__*/React.createElement(SumModal, {
     rows: rows,
     selectedCount: selectedCount,
     summaryData: summaryData,
