@@ -147,8 +147,22 @@
     .picker-menu-item:hover { background: #f3f4f6; }
     .picker-menu-item.active { background: #eff6ff; color: #1d4ed8; }
     .table-page-body { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
-    .table-scroll-y { flex: 1 1 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0.75rem; }
-    .table-scroll-x { overflow-x: auto; overflow-y: visible; }
+    .table-scroll-y { flex: 1 1 0; min-height: 0; overflow: auto; padding: 0.75rem; -webkit-overflow-scrolling: touch; }
+    .table-scroll-x { overflow: visible; width: 100%; }
+    .accounting-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #f9fafb;
+    }
+    .accounting-table thead th.col-header-input {
+      z-index: 22;
+      box-shadow: inset 0 -1px 0 rgba(229, 231, 235, 0.9);
+    }
+    .accounting-table thead th.sticky-col-check {
+      left: 0;
+      z-index: 40;
+    }
     .table-action-bar {
       display: flex;
       flex-direction: row;
@@ -1149,16 +1163,14 @@ const App = function App() {
     className: "inline-block min-w-full rounded-2xl bg-white shadow-sm ring-1 ring-gray-200/70"
   }, /*#__PURE__*/React.createElement("table", {
     className: "accounting-table border-separate border-spacing-0 text-xs bg-white"
-  }, /*#__PURE__*/React.createElement("thead", {
-    className: "sticky top-0 z-20 bg-gray-50"
-  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
-    className: "sticky left-0 z-30 bg-gray-50 px-1.5 py-2 w-11 text-center border-b border-r border-gray-200/90 first:rounded-tl-2xl"
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    className: "sticky-col-check bg-gray-50 px-1.5 py-2 w-11 text-center border-b border-r border-gray-200/90 first:rounded-tl-2xl"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: toggleAllSelection,
     className: "text-blue-500 hover:text-blue-700 transition-colors"
   }, allFilledChecked ? /*#__PURE__*/React.createElement(Icons.CheckSquare, null) : /*#__PURE__*/React.createElement(Icons.Square, null))), Object.entries(COL_CONFIG).map(([field, cfg], idx, arr) => /*#__PURE__*/React.createElement("th", {
     key: field,
-    className: `px-2 py-2 font-semibold text-gray-600 border-b border-gray-200/90 data-cell ${cfg.align === 'right' ? 'text-right' : 'text-left'}`,
+    className: `px-2 py-2 font-semibold text-gray-600 border-b border-gray-200/90 data-cell ${field === 'input' ? 'col-header-input' : ''} ${cfg.align === 'right' ? 'text-right' : 'text-left'}`,
     style: getColumnStyle(field, columnWidths)
   }, cfg.header))), /*#__PURE__*/React.createElement("th", {
     className: "px-1 py-2 w-8 border-b border-gray-200/90 rounded-tr-2xl"
