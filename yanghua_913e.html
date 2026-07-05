@@ -665,15 +665,18 @@
       return Number.isFinite(n) ? n : '';
     };
 
-    const truncateToDecimals = (value, decimals) => {
-      if (!Number.isFinite(value)) return null;
-      const factor = 10 ** decimals;
-      return Math.trunc(value * factor) / factor;
+    // (720 - 待料分钟) / 60，截断保留两位小数（不四舍五入），返回「百分之一小时」整数
+    const calcEffectiveHoursCenti = (waitingMinutes) => {
+      if (!Number.isFinite(waitingMinutes)) return null;
+      return Math.trunc((720 - waitingMinutes) * 100 / 60);
     };
 
-    const truncateToInteger = (value) => {
-      if (!Number.isFinite(value)) return null;
-      return Math.trunc(value);
+    const formatCentiAsTruncatedDecimals = (centi, decimals = 2) => {
+      if (centi == null || !Number.isFinite(centi)) return '—';
+      const factor = 10 ** decimals;
+      const whole = Math.trunc(centi / factor);
+      const frac = Math.abs(centi % factor);
+      return `${whole}.${String(frac).padStart(decimals, '0')}`;
     };
 
     const cloneRow = (row) => ({
@@ -1204,16 +1207,21 @@
         return totalWeightGroup1 + group2 + group3;
       }, [totalWeightGroup1, totalWeightManual.group2, totalWeightManual.group3]);
 
-      const hourRateCalc = useMemo(() => {
+      const hourRateEffectiveHoursCenti = useMemo(() => {
         if (waitingMaterialTime == null) return null;
+        const centi = calcEffectiveHoursCenti(waitingMaterialTime);
+        if (centi == null || centi <= 0) return null;
+        return centi;
+      }, [waitingMaterialTime]);
+
+      const hourRateCalc = useMemo(() => {
+        if (hourRateEffectiveHoursCenti == null) return null;
         const group2 = parseFloat(hourRateManual.group2) || 0;
         const group3 = parseFloat(hourRateManual.group3) || 0;
         const supplement = parseFloat(hourRateManual.supplement) || 0;
         const totalPieces = hourRateGroup1 + group2 + group3 + supplement;
-        const effectiveHours = truncateToDecimals((720 - waitingMaterialTime) / 60, 2);
-        if (effectiveHours == null || effectiveHours <= 0) return null;
-        return truncateToInteger(totalPieces / effectiveHours);
-      }, [waitingMaterialTime, hourRateGroup1, hourRateManual]);
+        return Math.trunc(totalPieces * 100 / hourRateEffectiveHoursCenti);
+      }, [hourRateEffectiveHoursCenti, hourRateGroup1, hourRateManual]);
 
       const updateHourRateManual = (field, value) => {
         setHourRateManual(prev => ({ ...prev, [field]: value }));
@@ -1716,6 +1724,14 @@
                       <div className="flex items-center justify-between text-xs text-gray-500 px-1">
                         <span>待料时间（自动）</span>
                         <span className="font-mono">{waitingMaterialTime != null ? `${waitingMaterialTime} 分钟` : '—'}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-gray-500 px-1">
+                        <span>有效小时 (720−待料)÷60</span>
+                        <span className="font-mono">
+                          {hourRateEffectiveHoursCenti != null
+                            ? formatCentiAsTruncatedDecimals(hourRateEffectiveHoursCenti)
+                            : '—'}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between bg-purple-50 border border-purple-100 apple-result-box px-4 py-3">
                         <span className="text-sm text-purple-800 font-medium">小时率</span>
