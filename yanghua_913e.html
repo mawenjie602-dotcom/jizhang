@@ -733,6 +733,40 @@
       return `${preset.model} (${preset.length})`;
     };
 
+    const MODEL_CELL_PADDING_PX = 10;
+    const MODEL_TEXT_SCALE = 1.2;
+
+    const measureModelColumnPx = (probe, rows, presetMap) => {
+      probe.className = 'col-width-probe accounting-table text-xs font-semibold whitespace-nowrap';
+      probe.textContent = COL_META.model.header;
+      let maxWidth = probe.getBoundingClientRect().width + MODEL_CELL_PADDING_PX;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        let iconPx = 0;
+        if (!row.presetId) {
+          probe.className = 'col-width-probe text-xs font-normal whitespace-nowrap text-gray-400';
+          probe.textContent = COL_META.model.header;
+        } else {
+          const preset = presetMap.get(row.presetId);
+          if (!preset) {
+            probe.className = 'col-width-probe text-xs font-normal whitespace-nowrap text-gray-400';
+            probe.textContent = COL_META.model.header;
+          } else {
+            probe.className = 'col-width-probe text-sm font-medium whitespace-nowrap';
+            probe.textContent = `${preset.model} (${preset.length})`;
+            if (preset.weight == null) iconPx = COL_META.model.iconExtraPx;
+          }
+        }
+        maxWidth = Math.max(
+          maxWidth,
+          probe.getBoundingClientRect().width + MODEL_CELL_PADDING_PX + iconPx
+        );
+      }
+
+      return maxWidth;
+    };
+
     const useColumnWidths = (rows, columns, presetMap) => useMemo(() => {
       const modelPadding = COL_META.model.contentPaddingCh;
       const modelHeaderWidth = charWeight(COL_META.model.header);
@@ -759,7 +793,8 @@
       });
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        modelMax = Math.max(modelMax, charWeight(getModelCellDisplayText(row, presetMap)));
+        const textWidth = charWeight(getModelCellDisplayText(row, presetMap));
+        modelMax = Math.max(modelMax, Math.ceil(textWidth * MODEL_TEXT_SCALE));
         if (!row.presetId) continue;
         const preset = presetMap.get(row.presetId);
         if (preset && preset.weight == null) {
@@ -812,8 +847,12 @@
       ? { width: `${pixelWidths.reduce((sum, w) => sum + w, 0)}px` }
       : undefined;
 
-    function useSplitTableColSync(splitStackRef, columnWidths, columns, rows) {
+    function useSplitTableColSync(splitStackRef, columnWidths, columns, rows, presetMap) {
       const widthsKey = useMemo(() => getColumnWidthsKey(columnWidths, columns), [columnWidths, columns]);
+      const modelContentKey = useMemo(
+        () => rows.map(row => `${row.presetId || ''}:${getModelCellDisplayText(row, presetMap)}`).join('|'),
+        [rows, presetMap]
+      );
       const [syncState, setSyncState] = useState({ key: '', widths: null });
 
       useLayoutEffect(() => {
@@ -848,11 +887,11 @@
 
           const measured = [
             cells[0].getBoundingClientRect().width,
-            measureCh(columnWidths.model, columnWidths.modelExtraPx),
+            measureModelColumnPx(probe, rows, presetMap),
             ...columns.map(col => measureCh(columnWidths.data[col])),
             measureCh(columnWidths.action)
           ];
-          setSyncState({ key: widthsKey, widths: measured });
+          setSyncState({ key: `${widthsKey}|${modelContentKey}`, widths: measured });
         };
 
         if (document.fonts && document.fonts.ready) {
@@ -862,9 +901,9 @@
         }
 
         return () => { cancelled = true; };
-      }, [splitStackRef, widthsKey, rows.length]);
+      }, [splitStackRef, widthsKey, modelContentKey, rows, presetMap, columns, columnWidths]);
 
-      return syncState.key === widthsKey ? syncState.widths : null;
+      return syncState.key === `${widthsKey}|${modelContentKey}` ? syncState.widths : null;
     }
 
     const ColumnInput = memo(({ value, onChange, className = '', ...props }) => (
@@ -991,7 +1030,7 @@
       const splitStackRef = useRef(null);
       const presetMap = useMemo(() => buildPresetMap(presets), [presets]);
       const columnWidths = useColumnWidths(rows, columns, presetMap);
-      const pixelColWidths = useSplitTableColSync(splitStackRef, columnWidths, columns, rows);
+      const pixelColWidths = useSplitTableColSync(splitStackRef, columnWidths, columns, rows, presetMap);
       const splitTableStyle = getSplitTableWidthStyle(pixelColWidths);
       const modelStickyLeft = pixelColWidths ? pixelColWidths[0] : null;
 
