@@ -423,6 +423,12 @@
       box-shadow: 1px 0 0 var(--excel-grid);
     }
 
+    .accounting-table thead th.excel-modelhead,
+    .accounting-table tbody td.excel-modelcell {
+      overflow: visible;
+      text-overflow: clip;
+    }
+
     .accounting-table tbody td.excel-rowhead {
       position: -webkit-sticky;
       position: sticky;
@@ -488,12 +494,9 @@
       padding: 0 4px;
       cursor: pointer;
       text-align: center;
-      overflow: hidden;
     }
     .model-cell-btn > span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 0;
+      white-space: nowrap;
     }
 
     .table-block {
@@ -691,7 +694,7 @@
     };
 
     const COL_META = {
-      model: { header: '型号(长度)', min: 3 },
+      model: { header: '型号(长度)', placeholder: '型号(长度)', min: 3, contentPaddingCh: 2, iconExtraPx: 28 },
       action: { header: '操作', placeholder: '0', min: 2 },
       data: { placeholder: '0', minHanziCount: 2, contentPaddingCh: 2 }
     };
@@ -723,8 +726,18 @@
     const createDefaultRows = (count = DEFAULT_ROW_COUNT) =>
       Array.from({ length: count }).map(() => ({ id: generateId(), presetId: null, values: {} }));
 
+    const getModelCellDisplayText = (row, presetMap) => {
+      if (!row.presetId) return COL_META.model.header;
+      const preset = presetMap.get(row.presetId);
+      if (!preset) return COL_META.model.header;
+      return `${preset.model} (${preset.length})`;
+    };
+
     const useColumnWidths = (rows, columns, presetMap) => useMemo(() => {
-      let modelMax = charWeight(COL_META.model.header);
+      const modelPadding = COL_META.model.contentPaddingCh;
+      const modelHeaderWidth = charWeight(COL_META.model.header);
+      let modelMax = modelHeaderWidth;
+      let modelExtraPx = 0;
       const dataWidths = {};
       const dataMinCh = getDataMinCh();
       columns.forEach(col => {
@@ -744,22 +757,22 @@
         }
         dataWidths[col] = Math.max(minColCh, maxW + COL_META.data.contentPaddingCh);
       });
-      let hasMissingWeight = false;
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
+        modelMax = Math.max(modelMax, charWeight(getModelCellDisplayText(row, presetMap)));
         if (!row.presetId) continue;
         const preset = presetMap.get(row.presetId);
-        if (!preset) continue;
-        let text = `${preset.model} (${preset.length})`;
-        if (preset.weight == null) {
-          text += ' !!';
-          hasMissingWeight = true;
+        if (preset && preset.weight == null) {
+          modelExtraPx = COL_META.model.iconExtraPx;
         }
-        modelMax = Math.max(modelMax, charWeight(text));
       }
       return {
-        model: Math.max(COL_META.model.min, modelMax + 1),
-        modelExtraPx: hasMissingWeight ? 28 : 0,
+        model: Math.max(
+          COL_META.model.min,
+          modelHeaderWidth + modelPadding,
+          modelMax + modelPadding
+        ),
+        modelExtraPx,
         action: Math.max(COL_META.action.min, charWeight(COL_META.action.header) + 1),
         data: dataWidths
       };
