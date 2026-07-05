@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>生产记账</title>
+  <meta name="description" content="生产记账 - iOS风格">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel for in-browser JSX compilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* 基础及 iOS 专属样式重置 */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: pan-x pan-y;
+      min-height: 100dvh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    
+    :root {
+      --excel-header: #fafbfc;
+      --excel-grid: #eceef2;
+      --page-bg: #ffffff;
+      --apple-r: 12px;
+      --apple-r-sm: 9px;
+      --apple-r-xs: 7px;
+      --apple-r-lg: 18px;
+      --apple-r-xl: 22px;
+      --apple-r-pill: 9999px;
+      --excel-rowhead-w: 2.75rem;
+      --excel-header-bg: #fafbfc;
+      --excel-rowhead-bg: #fafbfc;
+      --excel-corner-bg: #f0f1f3;
+      --ios-blue: #007aff;
+      --ios-purple: #5856d6;
+      --ios-red: #ff3b30;
+      --surface-border: rgba(0, 0, 0, 0.06);
+      --surface-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    html {
+      font-size: calc(16px * var(--app-font-scale, 1));
+      height: 100%;
+      background: var(--page-bg);
+    }
+    .bg-page { background-color: var(--page-bg); }
+    .bg-excel-header { background-color: var(--excel-header); }
+    .border-excel-grid { border-color: var(--excel-grid); }
+    
+    .apple-card {
+      background: #fff;
+      border-radius: var(--apple-r);
+      overflow: hidden;
+      border: 1px solid var(--surface-border);
+      box-shadow: var(--surface-shadow);
+    }
+    .apple-card-lg { border-radius: var(--apple-r-lg); }
+    .apple-pill { border-radius: var(--apple-r-pill); }
+    .apple-r-sm { border-radius: var(--apple-r-sm); }
+    .apple-r-lg { border-radius: var(--apple-r-lg); }
+    .apple-r-xl { border-radius: var(--apple-r-xl); }
+
+    .apple-nav-btn {
+      border-radius: var(--apple-r-sm);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .apple-nav-btn-settings { color: var(--ios-blue); }
+    .apple-nav-btn-clear { color: #8e8e93; }
+    .apple-nav-btn-clear:hover { color: var(--ios-red); }
+
+    .app-header {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .section-head {
+      padding: 0.625rem 1rem;
+      border-bottom: 1px solid var(--surface-border);
+    }
+    .section-head-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #3a3a3c;
+      letter-spacing: -0.01em;
+    }
+
+    .header-action-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3125rem 0.6875rem;
+      border-radius: var(--apple-r-pill);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #fff;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .header-action-btn:active { transform: scale(0.96); opacity: 0.88; }
+    .header-action-btn-sum { background: var(--ios-blue); }
+    .header-action-btn-calc { background: var(--ios-purple); }
+
+    .apple-btn-primary {
+      border-radius: var(--apple-r);
+      transition: background 0.15s;
+    }
+    .apple-btn-soft {
+      border-radius: var(--apple-r-sm);
+      transition: background 0.15s, color 0.15s;
+    }
+    .apple-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--apple-r-pill);
+      transition: background 0.15s, color 0.15s;
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--surface-border);
+      background: #fff;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .modal-overlay {
+      background: rgba(0, 0, 0, 0.45);
+      animation: overlayFadeIn 0.18s ease-out both;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .modal-panel {
+      background: #fff;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      animation: modalIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .modal-head-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1c1c1e;
+      letter-spacing: -0.02em;
+    }
+
+    .apple-stat-card {
+      border-radius: var(--apple-r-lg);
+      background: linear-gradient(145deg, #007aff 0%, #0051d5 100%);
+    }
+
+    .apple-input {
+      border-radius: var(--apple-r-sm);
+      border: 1px solid var(--surface-border);
+      background: #f9f9fb;
+    }
+    .apple-input:focus {
+      outline: none;
+      border-color: rgba(0, 122, 255, 0.35);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    }
+    .apple-sheet {
+      border-radius: var(--apple-r-xl) var(--apple-r-xl) 0 0;
+    }
+    @media (min-width: 640px) {
+      .apple-sheet { border-radius: var(--apple-r-lg); }
+    }
+    .apple-badge {
+      border-radius: var(--apple-r-xs);
+    }
+    .apple-badge-pill {
+      border-radius: var(--apple-r-pill);
+    }
+    .apple-result-box {
+      border-radius: var(--apple-r);
+    }
+    .apple-detail-box {
+      border-radius: var(--apple-r);
+    }
+    .col-control-btn {
+      border-radius: var(--apple-r-sm);
+      border: 1px solid var(--surface-border);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: var(--surface-shadow);
+      transition: transform 0.15s, background 0.15s;
+    }
+    .col-control-btn:active { transform: scale(0.95); }
+    .row-action-btn {
+      border-radius: var(--apple-r-sm);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    @supports (corner-shape: squircle) {
+      .apple-card,
+      .apple-card-lg,
+      .apple-pill,
+      .apple-r-sm,
+      .apple-r-lg,
+      .apple-r-xl,
+      .apple-nav-btn,
+      .header-action-btn,
+      .apple-btn-primary,
+      .apple-btn-soft,
+      .apple-icon-btn,
+      .apple-input,
+      .apple-sheet,
+      .apple-badge,
+      .apple-badge-pill,
+      .modal-head,
+      .apple-stat-card,
+      .apple-result-box,
+      .apple-detail-box,
+      .col-control-btn,
+      .row-action-btn,
+      .table-shell,
+      .section-head {
+        corner-shape: squircle;
+      }
+      .accounting-table thead th.table-corner-tl,
+      .accounting-table thead th.table-corner-tr,
+      .accounting-table tbody td.table-corner-bl,
+      .accounting-table tbody td.table-corner-br,
+      .accounting-table input.cell-input,
+      .table-row-btn,
+      .font-size-preview,
+      .font-size-default-btn,
+      .font-size-confirm-btn {
+        corner-shape: squircle;
+      }
+    }
+    
+    .pt-safe { padding-top: env(safe-area-inset-top); }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes modalIn {
+      from { transform: translateY(10px) scale(0.98); }
+      to { transform: translateY(0) scale(1); }
+    }
+    
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none; margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    .app-page {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden;
+    }
+
+    .table-page-body {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 0.5rem 0.375rem 0.5rem 0.5rem;
+      box-sizing: border-box;
+    }
+
+    .table-scroll-y {
+      flex: 1 1 0;
+      min-height: 0;
+      width: 100%;
+      overflow: auto;
+      background: var(--page-bg);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    .table-scroll-x {
+      display: inline-block;
+      min-width: 100%;
+      overflow: visible;
+      vertical-align: top;
+    }
+
+    .table-shell {
+      display: inline-block;
+      background: #fff;
+      overflow: visible;
+      border-radius: var(--apple-r);
+      border: 1px solid var(--surface-border);
+      box-shadow: var(--surface-shadow);
+    }
+
+    .accounting-table thead th.table-corner-tl { border-top-left-radius: var(--apple-r); }
+    .accounting-table thead th.table-corner-tr { border-top-right-radius: var(--apple-r); }
+    .accounting-table tbody td.table-corner-bl { border-bottom-left-radius: var(--apple-r); }
+    .accounting-table tbody td.table-corner-br { border-bottom-right-radius: var(--apple-r); }
+
+    .table-split-stack {
+      display: inline-grid;
+      grid-template-columns: max-content;
+      grid-template-areas: "head" "body";
+      vertical-align: top;
+    }
+
+    .table-head-sticky {
+      grid-area: head;
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: #fff;
+      isolation: isolate;
+      box-shadow: 0 1px 0 var(--excel-grid);
+    }
+
+    .table-body-wrap {
+      grid-area: body;
+      position: relative;
+      z-index: 1;
+    }
+
+    .accounting-table {
+      touch-action: pan-x pan-y;
+      table-layout: fixed;
+      width: max-content;
+    }
+
+    .table-head-sticky .accounting-table { margin-bottom: -1px; }
+
+    .accounting-table col.excel-rowhead-col { width: var(--excel-rowhead-w); }
+    .accounting-table col.excel-action-col { width: 2rem; }
+
+    .accounting-table th,
+    .accounting-table td {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      vertical-align: middle;
+      box-sizing: border-box;
+      height: 44px;
+      padding: 0 4px;
+    }
+
+    .accounting-table th.data-cell,
+    .accounting-table td.data-cell {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .accounting-table thead th.excel-colhead {
+      z-index: 41;
+      background: var(--excel-header-bg);
+      border-bottom: 1px solid var(--excel-grid);
+      border-right: 1px solid var(--excel-grid);
+      font-weight: 600;
+      font-size: 11px;
+      color: #636366;
+      text-overflow: clip;
+    }
+
+    .accounting-table thead th.excel-corner {
+      position: -webkit-sticky;
+      position: sticky;
+      left: 0;
+      z-index: 52;
+      width: var(--excel-rowhead-w);
+      min-width: var(--excel-rowhead-w);
+      max-width: var(--excel-rowhead-w);
+      background: var(--excel-corner-bg);
+      box-shadow: 1px 0 0 var(--excel-grid), 0 1px 0 var(--excel-grid);
+    }
+
+    .accounting-table thead th.excel-modelhead {
+      position: -webkit-sticky;
+      position: sticky;
+      z-index: 46;
+      background: var(--excel-header-bg);
+      box-shadow: 1px 0 0 var(--excel-grid);
+    }
+
+    .accounting-table tbody td.excel-rowhead {
+      position: -webkit-sticky;
+      position: sticky;
+      left: 0;
+      z-index: 30;
+      width: var(--excel-rowhead-w);
+      min-width: var(--excel-rowhead-w);
+      max-width: var(--excel-rowhead-w);
+      background: var(--excel-rowhead-bg);
+      border-bottom: 1px solid var(--excel-grid);
+      border-right: 1px solid var(--excel-grid);
+      box-shadow: 1px 0 0 var(--excel-grid);
+    }
+
+    .accounting-table tbody td.excel-modelcell {
+      position: -webkit-sticky;
+      position: sticky;
+      z-index: 25;
+      background: #fff;
+      border-bottom: 1px solid var(--excel-grid);
+      border-right: 1px solid var(--excel-grid);
+      box-shadow: 1px 0 0 var(--excel-grid);
+    }
+
+    .accounting-table tbody td.data-cell {
+      border-bottom: 1px solid var(--excel-grid);
+      border-right: 1px solid var(--excel-grid);
+      background: #fff;
+    }
+
+    .excel-row-num {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    .accounting-table input.cell-input {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      border-radius: var(--apple-r-xs);
+      background: transparent;
+      outline: none;
+      color: #1c1c1e;
+    }
+    .accounting-table input.cell-input:focus {
+      background: rgba(0, 122, 255, 0.08);
+    }
+
+    .model-cell-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      min-height: 44px;
+      padding: 0 4px;
+      cursor: pointer;
+      text-align: center;
+      overflow: hidden;
+    }
+    .model-cell-btn > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .table-block {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .table-action-bar-anchor {
+      position: sticky;
+      left: 50%;
+      width: 0;
+      overflow: visible;
+      z-index: 25;
+    }
+
+    .table-action-bar {
+      position: relative;
+      left: 0;
+      transform: translateX(-50%);
+      z-index: 25;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.625rem 0 0.25rem;
+      width: max-content;
+    }
+
+    .table-row-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-weight: 600;
+      padding: 0.4375rem 1.125rem;
+      border-radius: var(--apple-r-pill);
+      background: rgba(0, 122, 255, 0.08);
+      border: 1px solid rgba(0, 122, 255, 0.12);
+      color: var(--ios-blue);
+      cursor: pointer;
+      font-size: 0.8125rem;
+      transition: all .15s;
+    }
+    .table-row-btn:hover { background: rgba(0, 122, 255, 0.12); }
+    .table-row-btn:active { transform: scale(.96); }
+    .table-row-btn-remove {
+      background: rgba(255, 59, 48, 0.06);
+      border-color: rgba(255, 59, 48, 0.12);
+      color: var(--ios-red);
+    }
+    .table-row-btn-remove:hover:not(:disabled) { background: rgba(255, 59, 48, 0.1); }
+    .table-row-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .col-control-bar {
+      position: sticky;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 35;
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      padding: 0.375rem;
+    }
+
+    .col-control-side {
+      flex-shrink: 0;
+      width: auto;
+      min-width: 52px;
+      margin-left: auto;
+      align-self: stretch;
+      background: transparent;
+    }
+
+    .font-size-slider {
+      width: 100%;
+      height: 6px;
+      margin: 0;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+    .font-size-preview {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      border-radius: var(--apple-r-sm);
+      background: #f9f9fb;
+      border: 1px solid var(--surface-border);
+      color: #48484a;
+      text-align: center;
+      font-weight: 500;
+    }
+    .font-size-default-btn,
+    .font-size-confirm-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--apple-r-xs);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .font-size-default-btn {
+      border: 1px solid rgba(0, 122, 255, 0.15);
+      background: rgba(0, 122, 255, 0.06);
+      color: var(--ios-blue);
+    }
+    .font-size-default-btn:hover { background: rgba(0, 122, 255, 0.1); }
+    .font-size-default-btn:disabled { opacity: 0.4; cursor: default; }
+    .font-size-confirm-btn {
+      border: none;
+      background: var(--ios-blue);
+      color: #fff;
+      padding: 0.25rem 0.625rem;
+    }
+    .font-size-confirm-btn:hover:not(:disabled) { opacity: 0.88; }
+    .font-size-confirm-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* 隐藏滚动条但允许滚动 */
+    ::-webkit-scrollbar {
+        width: 0px;
+        height: 0px;
+        background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback, memo } = React;
+
+    // --- 图标组件定义 (替代 lucide-react) ---
+    const Icon = ({ children, className = "w-5 h-5", ...props }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+        {children}
+      </svg>
+    );
+
+    const Settings = (props) => <Icon {...props}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></Icon>;
+    const Calculator = (props) => <Icon {...props}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></Icon>;
+    const BadgePercent = (props) => <Icon {...props}><path d="M14 9a2 2 0 1 1-2-2"/><path d="M8 15a2 2 0 1 0 2 2"/><path d="M8 9h.01"/><path d="M16 15h.01"/><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"/></Icon>;
+    const AlertCircle = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></Icon>;
+    const Plus = (props) => <Icon {...props}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Icon>;
+    const Minus = (props) => <Icon {...props}><line x1="5" y1="12" x2="19" y2="12"/></Icon>;
+    const X = (props) => <Icon {...props}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>;
+    const ChevronLeft = (props) => <Icon {...props}><polyline points="15 18 9 12 15 6"/></Icon>;
+    const Trash2 = (props) => <Icon {...props}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></Icon>;
+    const Undo2 = (props) => <Icon {...props}><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></Icon>;
+    const Copy = (props) => <Icon {...props}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></Icon>;
+
+    // --- 工具函数与常量 ---
+    const STORAGE_KEY = 'ios_accounting_app_data';
+    const DEFAULT_ROW_COUNT = 10;
+    const DEFAULT_COL_COUNT = 10;
+    const DEFAULT_FONT_SCALE = 1;
+    const MIN_FONT_SCALE = 0.85;
+    const MAX_FONT_SCALE = 1.25;
+
+    const clampFontScale = (value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return DEFAULT_FONT_SCALE;
+      return Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, n));
+    };
+
+    const parseNumericInput = (value) => {
+      if (value === '') return '';
+      const n = parseFloat(value);
+      return Number.isFinite(n) ? n : '';
+    };
+
+    // (720 - 待料分钟) / 60，截断保留两位小数（不四舍五入），返回「百分之一小时」整数
+    const calcEffectiveHoursCenti = (waitingMinutes) => {
+      if (!Number.isFinite(waitingMinutes)) return null;
+      return Math.trunc((720 - waitingMinutes) * 100 / 60);
+    };
+
+    const cloneRow = (row) => ({
+      id: row.id,
+      presetId: row.presetId,
+      values: { ...row.values }
+    });
+
+    const buildPresetMap = (presets) => {
+      const map = new Map();
+      presets.forEach(p => map.set(p.id, p));
+      return map;
+    };
+
+    const charWeight = (text) => {
+      let n = 0;
+      const s = String(text);
+      for (let i = 0; i < s.length; i++) n += s.charCodeAt(i) > 127 ? 2 : 1;
+      return n;
+    };
+
+    const COL_META = {
+      model: { header: '型号(长度)', min: 3 },
+      action: { header: '操作', placeholder: '0', min: 2 },
+      data: { placeholder: '0', minHanziCount: 2, contentPaddingCh: 2 }
+    };
+
+    const getDataMinCh = () => COL_META.data.minHanziCount * 2;
+
+    const generateId = () => Math.random().toString(36).slice(2, 11);
+
+    const createDefaultColumns = (count = DEFAULT_COL_COUNT) =>
+      Array.from({ length: count }, (_, i) => (i + 1).toString());
+
+    const formatColumnHeader = (col) => `${col}框`;
+
+    const normalizeColumns = (cols) => {
+      if (!Array.isArray(cols) || cols.length === 0) return createDefaultColumns();
+      return cols.map(col => String(col));
+    };
+
+    const getNextColumnKey = (cols) => {
+      const maxNum = cols.reduce((max, col) => {
+        const n = parseInt(String(col), 10);
+        return Number.isFinite(n) ? Math.max(max, n) : max;
+      }, 0);
+      return String(maxNum + 1);
+    };
+
+    const getColumnHeaderMinCh = (col) => charWeight(formatColumnHeader(col)) + 1;
+
+    const createDefaultRows = (count = DEFAULT_ROW_COUNT) =>
+      Array.from({ length: count }).map(() => ({ id: generateId(), presetId: null, values: {} }));
+
+    const useColumnWidths = (rows, columns, presetMap) => useMemo(() => {
+      let modelMax = charWeight(COL_META.model.header);
+      const dataWidths = {};
+      const dataMinCh = getDataMinCh();
+      columns.forEach(col => {
+        let maxW = 0;
+        let hasData = false;
+        for (let i = 0; i < rows.length; i++) {
+          const val = rows[i].values[col];
+          if (val === '' || val == null) continue;
+          hasData = true;
+          maxW = Math.max(maxW, charWeight(String(val)));
+        }
+        const headerMinCh = getColumnHeaderMinCh(col);
+        const minColCh = Math.max(dataMinCh, headerMinCh);
+        if (!hasData) {
+          dataWidths[col] = minColCh;
+          return;
+        }
+        dataWidths[col] = Math.max(minColCh, maxW + COL_META.data.contentPaddingCh);
+      });
+      let hasMissingWeight = false;
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row.presetId) continue;
+        const preset = presetMap.get(row.presetId);
+        if (!preset) continue;
+        let text = `${preset.model} (${preset.length})`;
+        if (preset.weight == null) {
+          text += ' !!';
+          hasMissingWeight = true;
+        }
+        modelMax = Math.max(modelMax, charWeight(text));
+      }
+      return {
+        model: Math.max(COL_META.model.min, modelMax + 1),
+        modelExtraPx: hasMissingWeight ? 28 : 0,
+        action: Math.max(COL_META.action.min, charWeight(COL_META.action.header) + 1),
+        data: dataWidths
+      };
+    }, [rows, columns, presetMap]);
+
+    const getColWidthStyle = (widthCh, extraPx = 0) => {
+      const w = `${widthCh}ch`;
+      if (extraPx > 0) {
+        const width = `calc(${w} + ${extraPx}px)`;
+        return { width, minWidth: width, maxWidth: width };
+      }
+      return { width: w, minWidth: w, maxWidth: w };
+    };
+
+    const colPxStyle = (width) => ({
+      width: `${width}px`,
+      minWidth: `${width}px`,
+      maxWidth: `${width}px`
+    });
+
+    const getColumnWidthsKey = (columnWidths, columns) =>
+      `model:${columnWidths.model}:${columnWidths.modelExtraPx}|action:${columnWidths.action}|` +
+      columns.map(col => `${col}:${columnWidths.data[col]}`).join('|');
+
+    const renderTableColGroup = (columnWidths, columns, pixelWidths) => (
+      <colgroup>
+        <col className="excel-rowhead-col" style={pixelWidths ? colPxStyle(pixelWidths[0]) : undefined} />
+        <col style={pixelWidths ? colPxStyle(pixelWidths[1]) : getColWidthStyle(columnWidths.model, columnWidths.modelExtraPx)} />
+        {columns.map(col => (
+          <col key={col} style={getColWidthStyle(columnWidths.data[col])} />
+        ))}
+        <col className="excel-action-col" style={pixelWidths ? colPxStyle(pixelWidths[pixelWidths.length - 1]) : getColWidthStyle(columnWidths.action)} />
+      </colgroup>
+    );
+
+    const getSplitTableWidthStyle = (pixelWidths) => pixelWidths
+      ? { width: `${pixelWidths.reduce((sum, w) => sum + w, 0)}px` }
+      : undefined;
+
+    function useSplitTableColSync(splitStackRef, columnWidths, columns, rows) {
+      const widthsKey = useMemo(() => getColumnWidthsKey(columnWidths, columns), [columnWidths, columns]);
+      const [syncState, setSyncState] = useState({ key: '', widths: null });
+
+      useLayoutEffect(() => {
+        const stack = splitStackRef.current;
+        if (!stack || rows.length === 0) {
+          setSyncState({ key: widthsKey, widths: null });
+          return;
+        }
+
+        let cancelled = false;
+        const measure = () => {
+          if (cancelled) return;
+          const bodyRow = stack.querySelector('.accounting-table-body tbody tr');
+          if (!bodyRow) return;
+          const cells = [...bodyRow.children];
+          if (cells.length < columns.length + 3) return;
+
+          let probe = stack.querySelector('.col-width-probe');
+          if (!probe) {
+            probe = document.createElement('span');
+            probe.className = 'col-width-probe accounting-table text-xs';
+            probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;white-space:nowrap;height:0;overflow:hidden;';
+            stack.appendChild(probe);
+          }
+
+          const measureCh = (widthCh, extraPx = 0) => {
+            probe.style.width = extraPx > 0
+              ? `calc(${widthCh}ch + ${extraPx}px)`
+              : `${widthCh}ch`;
+            return probe.getBoundingClientRect().width;
+          };
+
+          const measured = [
+            cells[0].getBoundingClientRect().width,
+            measureCh(columnWidths.model, columnWidths.modelExtraPx),
+            ...columns.map(col => measureCh(columnWidths.data[col])),
+            measureCh(columnWidths.action)
+          ];
+          setSyncState({ key: widthsKey, widths: measured });
+        };
+
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(measure);
+        } else {
+          measure();
+        }
+
+        return () => { cancelled = true; };
+      }, [splitStackRef, widthsKey, rows.length]);
+
+      return syncState.key === widthsKey ? syncState.widths : null;
+    }
+
+    const ColumnInput = memo(({ value, onChange, className = '', ...props }) => (
+      <input
+        type="number"
+        value={value === undefined ? '' : value}
+        onChange={onChange}
+        placeholder={COL_META.data.placeholder}
+        className={`cell-input font-medium text-center transition-colors ${className}`}
+        {...props}
+      />
+    ));
+
+    const FontSizeSetting = ({ value, onConfirm }) => {
+      const [draftScale, setDraftScale] = useState(value);
+      useEffect(() => { setDraftScale(value); }, [value]);
+      const draftPct = Math.round(draftScale * 100);
+      const hasChanges = draftPct !== Math.round(value * 100);
+      const previewFontSize = 16 * draftScale * 0.875;
+
+      return (
+        <div className="apple-card bg-white overflow-hidden">
+          <div className="section-head flex items-center justify-between gap-2">
+            <h2 className="section-head-title">文字大小</h2>
+            <button
+              type="button"
+              className="font-size-confirm-btn"
+              disabled={!hasChanges}
+              onClick={() => onConfirm(draftScale)}
+            >
+              {hasChanges ? '确认' : '已应用'}
+            </button>
+          </div>
+          <div className="p-4">
+            <div className="flex justify-end mb-2">
+              <button
+                type="button"
+                className="font-size-default-btn"
+                disabled={draftPct === 100}
+                onClick={() => setDraftScale(DEFAULT_FONT_SCALE)}
+              >
+                默认
+              </button>
+            </div>
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+              <span>小</span>
+              <span className="font-semibold text-blue-600 text-sm">{draftPct}%</span>
+              <span>大</span>
+            </div>
+            <input
+              type="range"
+              className="font-size-slider"
+              min={String(Math.round(MIN_FONT_SCALE * 100))}
+              max={String(Math.round(MAX_FONT_SCALE * 100))}
+              step="1"
+              value={draftPct}
+              onChange={e => setDraftScale(clampFontScale(Number(e.target.value) / 100))}
+            />
+            <div className="font-size-preview" style={{ fontSize: `${previewFontSize}px` }}>
+              预览：表格文字
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const loadData = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (!Array.isArray(data.presets)) data.presets = [];
+          if (!Array.isArray(data.columns) || data.columns.length === 0) {
+            data.columns = createDefaultColumns();
+          } else {
+            data.columns = normalizeColumns(data.columns);
+          }
+          if (!Array.isArray(data.rows) || data.rows.length === 0) {
+            data.rows = createDefaultRows();
+          } else {
+            data.rows = data.rows.map(r => {
+              const { selected, ...rest } = r || {};
+              return {
+                id: rest.id || generateId(),
+                presetId: rest.presetId ?? null,
+                values: rest.values && typeof rest.values === 'object' ? rest.values : {}
+              };
+            });
+          }
+          data.fontScale = clampFontScale(data.fontScale);
+          return data;
+        }
+      } catch (e) {}
+      return {
+        presets: [],
+        columns: createDefaultColumns(),
+        rows: createDefaultRows(),
+        fontScale: DEFAULT_FONT_SCALE
+      };
+    };
+
+    function App() {
+      // --- 状态管理 (带本地缓存) ---
+      const initData = loadData();
+      const [view, setView] = useState('main'); // 'main', 'settings'
+      const [presets, setPresets] = useState(initData.presets);
+      const [columns, setColumns] = useState(initData.columns);
+      const [rows, setRows] = useState(initData.rows);
+      const [fontScale, setFontScale] = useState(initData.fontScale ?? DEFAULT_FONT_SCALE);
+      const [undoSnapshots, setUndoSnapshots] = useState({});
+      
+      // 模态框状态
+      const [showSum, setShowSum] = useState(false);
+      const [showCalc, setShowCalc] = useState(false);
+      const [totalHangCount, setTotalHangCount] = useState('');
+      const [hourRateManual, setHourRateManual] = useState({ group2: '', group3: '', supplement: '' });
+      const [totalWeightManual, setTotalWeightManual] = useState({ group2: '', group3: '' });
+      const [showModelSelect, setShowModelSelect] = useState({ visible: false, rowId: null });
+      const [showWeightPrompt, setShowWeightPrompt] = useState({ visible: false, presetId: null });
+      const [weightInput, setWeightInput] = useState('');
+
+      // 设置页新增表单
+      const [newPreset, setNewPreset] = useState({ model: '', length: '', weight: '' });
+      const splitStackRef = useRef(null);
+      const presetMap = useMemo(() => buildPresetMap(presets), [presets]);
+      const columnWidths = useColumnWidths(rows, columns, presetMap);
+      const pixelColWidths = useSplitTableColSync(splitStackRef, columnWidths, columns, rows);
+      const splitTableStyle = getSplitTableWidthStyle(pixelColWidths);
+      const modelStickyLeft = pixelColWidths ? pixelColWidths[0] : null;
+
+      useEffect(() => {
+        document.documentElement.style.setProperty('--app-font-scale', String(fontScale));
+      }, [fontScale]);
+
+      // 自动保存（防抖，减少 localStorage 写入频率）
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ presets, columns, rows, fontScale }));
+          } catch (e) {
+            console.error('保存数据失败', e);
+          }
+        }, 300);
+        return () => clearTimeout(timer);
+      }, [presets, columns, rows, fontScale]);
+
+      // --- 表格操作 ---
+      const updateCellValue = useCallback((rowId, day, value) => {
+        const numValue = parseNumericInput(value);
+        setRows(prev => prev.map(r => r.id === rowId ? { ...r, values: { ...r.values, [day]: numValue } } : r));
+        setUndoSnapshots(prev => {
+          if (!prev[rowId]) return prev;
+          const next = { ...prev };
+          delete next[rowId];
+          return next;
+        });
+      }, []);
+
+      const addRow = () => {
+        setRows(prev => [...prev, { id: generateId(), presetId: null, values: {} }]);
+      };
+
+      const removeLastRow = () => {
+        setRows(prev => {
+          if (prev.length <= 1) return prev;
+          return prev.slice(0, -1);
+        });
+      };
+
+      const addColumn = () => {
+        setColumns(prev => [...prev, getNextColumnKey(prev)]);
+      };
+
+      const removeLastColumn = () => {
+        if (columns.length <= 1) return;
+        const removedCol = columns[columns.length - 1];
+        setColumns(prev => prev.slice(0, -1));
+        setRows(prev => prev.map(r => {
+          const nextValues = { ...r.values };
+          delete nextValues[removedCol];
+          return { ...r, values: nextValues };
+        }));
+      };
+
+      const clearRow = useCallback((rowId) => {
+        let snapshot = null;
+        setRows(prev => {
+          const row = prev.find(r => r.id === rowId);
+          if (!row) return prev;
+          snapshot = cloneRow(row);
+          return prev.map(r => r.id === rowId ? { ...r, presetId: null, values: {} } : r);
+        });
+        if (snapshot) {
+          setUndoSnapshots(prev => ({ ...prev, [rowId]: snapshot }));
+        }
+      }, []);
+
+      const undoClearRow = useCallback((rowId) => {
+        let snapshot = null;
+        setUndoSnapshots(prev => {
+          snapshot = prev[rowId] || null;
+          if (!snapshot) return prev;
+          const next = { ...prev };
+          delete next[rowId];
+          return next;
+        });
+        if (snapshot) {
+          setRows(prev => prev.map(r => r.id === rowId ? snapshot : r));
+        }
+      }, []);
+
+      const clearAllData = () => {
+        if (window.confirm('确定要清空当前表格的所有记账数据吗？（设置中的预设型号会保留）')) {
+          setColumns(createDefaultColumns());
+          setRows(createDefaultRows());
+          setUndoSnapshots({});
+        }
+      };
+
+      const isRowFilled = (row) => row.presetId || Object.values(row.values).some(v => typeof v === 'number' && Number.isFinite(v));
+
+      // --- 设置预设操作 ---
+      const handleAddPreset = () => {
+        if (!newPreset.model.trim() || !newPreset.length.trim()) {
+          alert('型号和长度为必填项');
+          return;
+        }
+        const length = parseFloat(newPreset.length);
+        if (!Number.isFinite(length)) {
+          alert('长度必须为有效数字');
+          return;
+        }
+        let weight = null;
+        if (newPreset.weight !== '') {
+          weight = parseFloat(newPreset.weight);
+          if (!Number.isFinite(weight)) {
+            alert('单重必须为有效数字');
+            return;
+          }
+        }
+        setPresets(prev => [...prev, {
+          id: generateId(),
+          model: newPreset.model.trim(),
+          length,
+          weight
+        }]);
+        setNewPreset({ model: '', length: '', weight: '' });
+      };
+
+      const handleDeletePreset = (id) => {
+        setPresets(prev => prev.filter(p => p.id !== id));
+        setRows(prev => prev.map(r => r.presetId === id ? { ...r, presetId: null } : r));
+      };
+
+      const selectModelForRow = (preset) => {
+        setRows(prev => prev.map(r => r.id === showModelSelect.rowId ? { ...r, presetId: preset.id } : r));
+        setShowModelSelect({ visible: false, rowId: null });
+      };
+
+      const handleFixWeight = () => {
+        const w = parseFloat(weightInput);
+        if (!Number.isFinite(w)) return;
+        setPresets(prev => prev.map(p => p.id === showWeightPrompt.presetId ? { ...p, weight: w } : p));
+        setShowWeightPrompt({ visible: false, presetId: null });
+        setWeightInput('');
+      };
+
+      // --- 数据统计计算 (计算所有有数据的行) ---
+      const summary = useMemo(() => {
+        const filledRows = rows.filter(r => isRowFilled(r));
+        const groups = {};
+        let grandTotalBranches = 0;
+        let grandTotalWeight = 0;
+
+        filledRows.forEach(row => {
+          if (!row.presetId) return;
+          const preset = presetMap.get(row.presetId);
+          if (!preset) return;
+
+          let rowBranches = 0;
+          Object.values(row.values).forEach(val => {
+            if (typeof val === 'number' && Number.isFinite(val)) rowBranches += val;
+          });
+
+          if (!groups[preset.id]) {
+            groups[preset.id] = { preset, totalBranches: 0, totalWeight: 0 };
+          }
+          groups[preset.id].totalBranches += rowBranches;
+        });
+
+        Object.values(groups).forEach(g => {
+          grandTotalBranches += g.totalBranches;
+          if (g.preset.weight != null) {
+            g.totalWeight = g.totalBranches * g.preset.weight * g.preset.length * 0.001;
+            grandTotalWeight += g.totalWeight;
+          }
+        });
+
+        return {
+          list: Object.values(groups),
+          grandTotalBranches,
+          grandTotalWeight,
+          filledRowCount: filledRows.length
+        };
+      }, [rows, presetMap]);
+
+      const summaryText = useMemo(() => {
+        let text = `记账汇总 (共 ${summary.filledRowCount} 行有数据)\n`;
+        text += `总支数: ${summary.grandTotalBranches}支\n`;
+        text += `总重量: ${summary.grandTotalWeight.toFixed(3)}\n\n`;
+        text += `【分项明细】\n`;
+        if (summary.list.length === 0) {
+          text += `暂无有效数据\n`;
+        } else {
+          summary.list.forEach(g => {
+            text += `- ${g.preset.model}(${g.preset.length}): ${g.totalBranches}支`;
+            if (g.preset.weight != null) text += `, 重 ${g.totalWeight.toFixed(3)}`;
+            else text += `, (缺单重)`;
+            text += `\n`;
+          });
+        }
+        return text;
+      }, [summary]);
+
+      const waitingMaterialTime = useMemo(() => {
+        const hang = parseFloat(totalHangCount);
+        if (totalHangCount === '' || !Number.isFinite(hang)) return null;
+        const raw = (60 / 8.5) * (102 - hang);
+        if (!Number.isFinite(raw)) return null;
+        return Math.max(0, Math.round(raw / 5) * 5);
+      }, [totalHangCount]);
+
+      const hourRateGroup1 = summary.grandTotalBranches;
+      const totalWeightGroup1 = summary.grandTotalWeight;
+
+      const hourRateTotalBranches = useMemo(() => {
+        const group2 = parseFloat(hourRateManual.group2) || 0;
+        const group3 = parseFloat(hourRateManual.group3) || 0;
+        return hourRateGroup1 + group2 + group3;
+      }, [hourRateGroup1, hourRateManual.group2, hourRateManual.group3]);
+
+      const totalWeightSum = useMemo(() => {
+        const group2 = parseFloat(totalWeightManual.group2) || 0;
+        const group3 = parseFloat(totalWeightManual.group3) || 0;
+        return totalWeightGroup1 + group2 + group3;
+      }, [totalWeightGroup1, totalWeightManual.group2, totalWeightManual.group3]);
+
+      const hourRateEffectiveHoursCenti = useMemo(() => {
+        if (waitingMaterialTime == null) return null;
+        const centi = calcEffectiveHoursCenti(waitingMaterialTime);
+        if (centi == null || centi <= 0) return null;
+        return centi;
+      }, [waitingMaterialTime]);
+
+      const hourRateCalc = useMemo(() => {
+        if (hourRateEffectiveHoursCenti == null) return null;
+        const group2 = parseFloat(hourRateManual.group2) || 0;
+        const group3 = parseFloat(hourRateManual.group3) || 0;
+        const supplement = parseFloat(hourRateManual.supplement) || 0;
+        const totalPieces = hourRateGroup1 + group2 + group3 + supplement;
+        return Math.trunc(totalPieces * 100 / hourRateEffectiveHoursCenti);
+      }, [hourRateEffectiveHoursCenti, hourRateGroup1, hourRateManual]);
+
+      const updateHourRateManual = (field, value) => {
+        setHourRateManual(prev => ({ ...prev, [field]: value }));
+      };
+
+      const updateTotalWeightManual = (field, value) => {
+        setTotalWeightManual(prev => ({ ...prev, [field]: value }));
+      };
+
+      // --- 复制文字内容 ---
+      const copySummaryText = () => {
+        navigator.clipboard.writeText(summaryText).then(() => alert('已复制到剪贴板')).catch(() => {
+            const textArea = document.createElement("textarea");
+            textArea.value = summaryText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('已复制到剪贴板');
+            } catch (err) {
+                alert('复制失败，请手动选择复制');
+            }
+            document.body.removeChild(textArea);
+        });
+      };
+
+      // ================= 视图 1：设置页 =================
+      if (view === 'settings') {
+        return (
+          <div className="app-page flex flex-col bg-page pb-safe font-sans">
+            <div className="app-header flex items-center justify-between px-4 py-2 sticky top-0 z-50 shrink-0">
+              <button onClick={() => setView('main')} className="text-[var(--ios-blue)] flex items-center font-medium text-sm active:opacity-60">
+                <ChevronLeft className="w-5 h-5 mr-0.5" /> 返回
+              </button>
+              <h1 className="text-base font-semibold tracking-tight text-gray-900">预设项管理</h1>
+              <div className="w-16"></div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+              <FontSizeSetting value={fontScale} onConfirm={setFontScale} />
+              <div className="apple-card bg-white overflow-hidden">
+                <div className="section-head"><h2 className="section-head-title">添加新型号预设</h2></div>
+                <div className="p-4 space-y-3">
+                  <div className="flex items-center border-b border-gray-100 pb-2">
+                    <span className="w-16 text-sm text-gray-500">型号<span className="text-red-500">*</span></span>
+                    <input type="text" placeholder="例: A型" className="flex-1 outline-none text-gray-900 bg-transparent" 
+                           value={newPreset.model} onChange={e => setNewPreset({...newPreset, model: e.target.value})} />
+                  </div>
+                  <div className="flex items-center border-b border-gray-100 pb-2">
+                    <span className="w-16 text-sm text-gray-500">长度<span className="text-red-500">*</span></span>
+                    <input type="number" placeholder="例: 10" className="flex-1 outline-none text-gray-900 bg-transparent" 
+                           value={newPreset.length} onChange={e => setNewPreset({...newPreset, length: e.target.value})} />
+                  </div>
+                  <div className="flex items-center border-b border-gray-100 pb-2">
+                    <span className="w-16 text-sm text-gray-500">单重</span>
+                    <input type="number" placeholder="选填" className="flex-1 outline-none text-gray-900 bg-transparent" 
+                           value={newPreset.weight} onChange={e => setNewPreset({...newPreset, weight: e.target.value})} />
+                  </div>
+                  <button onClick={handleAddPreset} className="w-full mt-2 py-2.5 bg-[var(--ios-blue)] text-white apple-btn-primary text-sm font-semibold active:opacity-90 transition-opacity">
+                    添加至列表
+                  </button>
+                </div>
+              </div>
+
+              <div className="apple-card bg-white overflow-hidden">
+                 <div className="section-head"><h2 className="section-head-title">已保存的预设</h2></div>
+                 <div className="divide-y divide-gray-100">
+                    {presets.length === 0 ? (
+                      <p className="text-center text-gray-400 py-6 text-sm">暂无数据</p>
+                    ) : (
+                      presets.map(p => (
+                        <div key={p.id} className="flex justify-between items-center p-4">
+                          <div>
+                            <div className="font-medium text-gray-900">{p.model} <span className="text-gray-500 text-sm font-normal">({p.length})</span></div>
+                            <div className="text-xs mt-1 text-gray-500">单重: {p.weight != null ? p.weight : <span className="text-amber-500">未填</span>}</div>
+                          </div>
+                          <button onClick={() => handleDeletePreset(p.id)} className="p-2 text-gray-400 hover:text-red-500 active:bg-red-50 apple-icon-btn transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                 </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ================= 视图 2：主表格页 =================
+      return (
+        <div className="app-page flex flex-col bg-page pb-safe font-sans">
+          {/* 顶部导航栏 */}
+          <div className="app-header flex items-center justify-between px-3 py-2 sticky top-0 z-50 shrink-0">
+            <div className="flex gap-1">
+              <button onClick={() => setView('settings')} className="flex items-center apple-nav-btn apple-nav-btn-settings px-2 py-1 active:opacity-60">
+                <Settings className="w-4 h-4 mr-1" /> 设置
+              </button>
+              <button onClick={clearAllData} className="flex items-center apple-nav-btn apple-nav-btn-clear px-2 py-1 active:opacity-60">
+                <Trash2 className="w-4 h-4 mr-1" /> 清空
+              </button>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+              <button onClick={() => setShowSum(true)} className="header-action-btn header-action-btn-sum">
+                <Calculator className="w-4 h-4 mr-1" /> 汇总
+              </button>
+              <button onClick={() => setShowCalc(true)} className="header-action-btn header-action-btn-calc">
+                <BadgePercent className="w-4 h-4 mr-1" /> 算账
+              </button>
+            </div>
+          </div>
+
+          {/* 电子表格区域 */}
+          <div className="table-page-body">
+            <div className="table-scroll-y">
+              <div className="table-scroll-x">
+                <div className="inline-flex items-stretch align-top min-w-full">
+                  <div className="table-block">
+                    <div className="table-shell">
+                      <div className="table-split-stack" ref={splitStackRef}>
+                      <div className="table-head-sticky">
+                        <table className="accounting-table accounting-table-head border-separate border-spacing-0 text-xs bg-white" style={splitTableStyle}>
+                          {renderTableColGroup(columnWidths, columns, pixelColWidths)}
+                          <thead>
+                            <tr>
+                              <th className="excel-corner excel-colhead table-corner-tl">#</th>
+                              <th className="excel-modelhead excel-colhead data-cell" style={{ left: modelStickyLeft ?? undefined }}>
+                                型号(长度)
+                              </th>
+                              {columns.map(col => (
+                                <th key={col} className="excel-colhead data-cell">{formatColumnHeader(col)}</th>
+                              ))}
+                              <th className="excel-colhead data-cell text-gray-400 table-corner-tr">操作</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>
+                      <div className="table-body-wrap">
+                        <table className="accounting-table accounting-table-body border-separate border-spacing-0 text-xs bg-white" style={splitTableStyle}>
+                          {renderTableColGroup(columnWidths, columns, pixelColWidths)}
+                          <tbody>
+                            {rows.map((row, index) => {
+                              const preset = row.presetId ? presetMap.get(row.presetId) : null;
+                              const hasMissingWeight = preset && preset.weight == null;
+
+                              return (
+                                <tr key={row.id}>
+                                  <td className={`excel-rowhead${index === rows.length - 1 ? ' table-corner-bl' : ''}`}>
+                                    <span className="excel-row-num">{index + 1}</span>
+                                  </td>
+                                  <td className="excel-modelcell data-cell" style={{ left: modelStickyLeft ?? undefined }}>
+                                    <div
+                                      className="model-cell-btn active:bg-gray-100/50"
+                                      onClick={() => setShowModelSelect({ visible: true, rowId: row.id })}
+                                    >
+                                      {hasMissingWeight && (
+                                        <div
+                                          className="mr-1.5 p-1 apple-icon-btn bg-red-50 cursor-pointer active:scale-90 transition-transform shrink-0"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowWeightPrompt({ visible: true, presetId: preset.id });
+                                          }}
+                                        >
+                                          <AlertCircle className="w-4 h-4 text-red-500" />
+                                        </div>
+                                      )}
+                                      <span className="text-sm whitespace-nowrap">
+                                        {preset ? (
+                                          <span className="font-medium text-gray-900">{preset.model} <span className="text-gray-500 font-normal">({preset.length})</span></span>
+                                        ) : (
+                                          <span className="text-gray-400 text-xs font-normal">{COL_META.model.header}</span>
+                                        )}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  {columns.map(col => (
+                                    <td key={col} className="data-cell">
+                                      <ColumnInput
+                                        value={row.values[col] === undefined ? '' : row.values[col]}
+                                        onChange={(e) => updateCellValue(row.id, col, e.target.value)}
+                                      />
+                                    </td>
+                                  ))}
+                                  <td className={`data-cell${index === rows.length - 1 ? ' table-corner-br' : ''}`}>
+                                    <div className="flex items-center justify-center h-full">
+                                      {undoSnapshots[row.id] ? (
+                                        <button onClick={() => undoClearRow(row.id)} className="p-2 text-blue-500 hover:bg-blue-50 row-action-btn" title="撤销">
+                                          <Undo2 className="w-4 h-4" />
+                                        </button>
+                                      ) : (
+                                        <button
+                                          onClick={() => clearRow(row.id)}
+                                          disabled={!isRowFilled(row)}
+                                          className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-30 disabled:hover:text-gray-400 hover:bg-red-50 row-action-btn"
+                                          title="清空行"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    </div>
+                    <div className="table-action-bar-anchor">
+                      <div className="table-action-bar">
+                        <button type="button" onClick={addRow} className="table-row-btn">
+                          <Plus className="w-4 h-4" /> 增加一行
+                        </button>
+                        <button type="button" onClick={removeLastRow} disabled={rows.length <= 1} className="table-row-btn table-row-btn-remove">
+                          <Minus className="w-4 h-4" /> 减少一行
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-control-side pointer-events-auto">
+                    <div className="col-control-bar">
+                      <button onClick={addColumn} className="col-control-btn flex flex-col items-center justify-center gap-0.5 px-1.5 py-2 text-[var(--ios-blue)] text-[10px] font-semibold whitespace-nowrap" title="增加一列">
+                        <Plus className="w-4 h-4" />
+                        加列
+                      </button>
+                      <button onClick={removeLastColumn} disabled={columns.length <= 1} className="col-control-btn flex flex-col items-center justify-center gap-0.5 px-1.5 py-2 text-[var(--ios-red)] text-[10px] font-semibold disabled:opacity-40 whitespace-nowrap" title="减少一列">
+                        <Minus className="w-4 h-4" />
+                        减列
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ================= 模态框：型号选择 (Bottom Sheet) ================= */}
+          {showModelSelect.visible && (
+            <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/40 backdrop-blur-sm sm:p-4 sm:items-center">
+              <div className="w-full sm:max-w-md bg-white apple-sheet h-[60vh] flex flex-col shadow-2xl animate-slide-up">
+                <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                  <h3 className="text-base font-bold">选择预设型号</h3>
+                  <button onClick={() => setShowModelSelect({ visible: false, rowId: null })} className="p-1.5 bg-gray-100 apple-icon-btn text-gray-500 active:bg-gray-200">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-auto bg-gray-50 p-2">
+                  <div className="apple-card bg-white divide-y divide-gray-100">
+                    {presets.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <p className="text-gray-400 text-sm mb-4">暂无预设，请先去设置中添加</p>
+                        <button onClick={() => { setShowModelSelect({ visible: false, rowId: null }); setView('settings'); }} className="px-4 py-2 bg-blue-50 text-blue-600 apple-btn-soft text-sm font-medium">
+                          前往设置
+                        </button>
+                      </div>
+                    ) : (
+                      presets.map(p => (
+                        <button 
+                          key={p.id} 
+                          onClick={() => selectModelForRow(p)}
+                          className="w-full text-left p-4 flex items-center justify-between active:bg-blue-50 transition-colors"
+                        >
+                          <div>
+                            <span className="font-semibold text-gray-900">{p.model}</span>
+                            <span className="text-gray-500 ml-2 text-sm">长度: {p.length}</span>
+                          </div>
+                          {p.weight == null && <span className="flex items-center text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-1 apple-badge"><AlertCircle className="w-3 h-3 mr-1"/>缺单重</span>}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 模态框：补全单重提示 (Alert) ================= */}
+          {showWeightPrompt.visible && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+              <div className="w-full max-w-xs apple-card bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col text-center">
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">缺失单重参数</h3>
+                  <p className="text-xs text-gray-500 mb-4">
+                    为保证重量计算准确，请为预设补充单重。
+                  </p>
+                  <input 
+                    type="number" 
+                    autoFocus
+                    placeholder="输入单重"
+                    className="w-full outline-none bg-gray-100 border border-gray-200 apple-input px-3 py-2.5 text-center font-medium focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
+                    value={weightInput}
+                    onChange={(e) => setWeightInput(e.target.value)}
+                  />
+                </div>
+                <div className="flex border-t border-gray-200 divide-x divide-gray-200">
+                  <button onClick={() => { setShowWeightPrompt({ visible: false, presetId: null }); setWeightInput(''); }} className="flex-1 py-3 text-gray-500 font-medium active:bg-gray-100 text-sm">取消</button>
+                  <button onClick={handleFixWeight} className="flex-1 py-3 text-blue-600 font-bold active:bg-gray-100 text-sm">确定</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 模态框：总和清单 ================= */}
+          {showSum && (
+            <div className="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <div className="modal-panel w-full max-w-lg apple-card apple-card-lg shadow-2xl flex flex-col h-[85vh] overflow-hidden">
+                
+                {/* Header */}
+                <div className="modal-head">
+                  <h3 className="modal-head-title">数据汇总清单</h3>
+                  <div className="flex gap-2">
+                    <button onClick={copySummaryText} className="p-1.5 bg-blue-50 text-[var(--ios-blue)] apple-icon-btn active:bg-blue-100" title="复制文本">
+                      <Copy className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => setShowSum(false)} className="p-1.5 bg-gray-100 text-gray-500 apple-icon-btn active:bg-gray-200">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-auto p-4 space-y-4">
+                  {/* 大数据总计卡片 */}
+                  <div className="apple-stat-card p-5 text-white shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10"><Calculator className="w-24 h-24" /></div>
+                    <h3 className="text-blue-100 text-xs font-medium mb-4 tracking-wider">全部 {summary.filledRowCount} 行有数据，已自动合计</h3>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <div className="text-[10px] text-blue-200 mb-1 uppercase">总支数</div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">{summary.grandTotalBranches} <span className="text-base font-normal">支</span></div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] text-blue-200 mb-1 uppercase">总重量 (T)</div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">{summary.grandTotalWeight.toFixed(3)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h4 className="text-xs font-bold text-gray-500 uppercase px-1">文字汇总</h4>
+                  <div className="apple-card bg-white overflow-hidden">
+                    <textarea
+                      readOnly
+                      className="w-full h-40 p-4 text-sm font-mono text-gray-700 bg-gray-50 outline-none resize-none leading-relaxed"
+                      value={summaryText}
+                    />
+                    <div className="border-t border-gray-100 p-3 bg-white">
+                      <button
+                        onClick={copySummaryText}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-[var(--ios-blue)] text-white apple-btn-primary text-sm font-semibold active:opacity-90 transition-opacity"
+                      >
+                        <Copy className="w-4 h-4" /> 复制文字
+                      </button>
+                    </div>
+                  </div>
+
+                  <h4 className="text-xs font-bold text-gray-500 uppercase px-1">各型号明细清单</h4>
+                  
+                  {/* 列表 */}
+                  <div className="apple-card bg-white divide-y divide-gray-100">
+                    {summary.list.length === 0 ? (
+                      <div className="p-8 text-center text-gray-400 text-sm">
+                        表格中没有有效数据，请先选择型号并填入数字。
+                      </div>
+                    ) : (
+                      summary.list.map((g, idx) => (
+                        <div key={idx} className="p-4 flex flex-col gap-2">
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold text-gray-900 text-sm">
+                              {g.preset.model} <span className="text-gray-500 font-normal">({g.preset.length})</span>
+                            </span>
+                            {g.preset.weight == null ? (
+                              <span className="text-[10px] bg-amber-50 text-amber-600 border border-amber-200/50 px-2 py-0.5 apple-badge-pill flex items-center">
+                                <AlertCircle className="w-3 h-3 mr-1" /> 缺单重无法算重
+                              </span>
+                            ) : (
+                              <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 apple-badge-pill font-mono">
+                                单重: {g.preset.weight}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex justify-between items-center bg-gray-50 p-2.5 apple-detail-box border border-gray-100">
+                            <div className="text-xs">
+                              <span className="text-gray-400">数量: </span>
+                              <span className="font-bold text-gray-800 font-mono text-sm">{g.totalBranches}</span>
+                            </div>
+                            <div className="text-xs text-right">
+                              <span className="text-gray-400">重量: </span>
+                              <span className="font-bold text-purple-600 font-mono text-sm">
+                                {g.preset.weight != null ? g.totalWeight.toFixed(3) : '---'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 模态框：算账 ================= */}
+          {showCalc && (
+            <div className="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <div className="modal-panel w-full max-w-lg apple-card apple-card-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+                <div className="modal-head">
+                  <h3 className="modal-head-title">算账</h3>
+                  <button onClick={() => setShowCalc(false)} className="p-1.5 bg-gray-100 text-gray-500 apple-icon-btn active:bg-gray-200">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-auto p-4 space-y-5">
+                  <section className="apple-card bg-white overflow-hidden">
+                    <div className="section-head">
+                      <h4 className="section-head-title">待料时间</h4>
+                      <p className="text-[11px] text-gray-400 mt-1">公式：60 ÷ 8.5 × (102 − 总挂数)，取 5 的倍数（5、10、15…）</p>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <label className="w-16 text-sm text-gray-500 shrink-0">总挂数<span className="text-red-500">*</span></label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          placeholder="请填写"
+                          className="flex-1 outline-none bg-gray-50 border border-gray-200 apple-input px-3 py-2 text-gray-900 font-mono text-center"
+                          value={totalHangCount}
+                          onChange={e => setTotalHangCount(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between bg-amber-50 border border-amber-100 apple-result-box px-4 py-3">
+                        <span className="text-sm text-amber-800 font-medium">待料时间</span>
+                        <span className="text-2xl font-bold font-mono text-amber-900">
+                          {waitingMaterialTime != null ? waitingMaterialTime : '—'}
+                          {waitingMaterialTime != null && <span className="text-sm font-normal ml-1">分钟</span>}
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="apple-card bg-white overflow-hidden">
+                    <div className="section-head">
+                      <h4 className="section-head-title">小时率</h4>
+                      <p className="text-[11px] text-gray-400 mt-1">(一组 + 二组 + 三组 + 补充) ÷ ((720 − 待料时间) ÷ 60，取两位小数不四舍五入)，结果取整数不四舍五入</p>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">一组</label>
+                          <input
+                            readOnly
+                            className="w-full bg-gray-100 border border-gray-200 apple-input px-3 py-2 text-gray-800 font-mono text-center"
+                            value={hourRateGroup1}
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1 text-center">汇总总只数</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">二组</label>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            placeholder="填写"
+                            className="w-full outline-none bg-gray-50 border border-gray-200 apple-input px-3 py-2 text-gray-900 font-mono text-center"
+                            value={hourRateManual.group2}
+                            onChange={e => updateHourRateManual('group2', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">三组</label>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            placeholder="填写"
+                            className="w-full outline-none bg-gray-50 border border-gray-200 apple-input px-3 py-2 text-gray-900 font-mono text-center"
+                            value={hourRateManual.group3}
+                            onChange={e => updateHourRateManual('group3', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">补充</label>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            placeholder="填写"
+                            className="w-full outline-none bg-gray-50 border border-gray-200 apple-input px-3 py-2 text-gray-900 font-mono text-center"
+                            value={hourRateManual.supplement}
+                            onChange={e => updateHourRateManual('supplement', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between bg-blue-50 border border-blue-100 apple-result-box px-4 py-3">
+                        <span className="text-sm text-blue-800 font-medium">总支数</span>
+                        <span className="text-2xl font-bold font-mono text-blue-900">
+                          {Number.isInteger(hourRateTotalBranches)
+                            ? hourRateTotalBranches
+                            : hourRateTotalBranches.toFixed(2)}
+                          <span className="text-sm font-normal ml-1">支</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-gray-500 px-1">
+                        <span>待料时间（自动）</span>
+                        <span className="font-mono">{waitingMaterialTime != null ? `${waitingMaterialTime} 分钟` : '—'}</span>
+                      </div>
+                      <div className="flex items-center justify-between bg-purple-50 border border-purple-100 apple-result-box px-4 py-3">
+                        <span className="text-sm text-purple-800 font-medium">小时率</span>
+                        <span className="text-2xl font-bold font-mono text-purple-900">
+                          {hourRateCalc != null ? hourRateCalc : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="apple-card bg-white overflow-hidden">
+                    <div className="section-head">
+                      <h4 className="section-head-title">总重</h4>
+                      <p className="text-[11px] text-gray-400 mt-1">总重 = 一组 + 二组 + 三组（单位：T）</p>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">一组</label>
+                          <input
+                            readOnly
+                            className="w-full bg-gray-100 border border-gray-200 apple-input px-3 py-2 text-gray-800 font-mono text-center"
+                            value={totalWeightGroup1.toFixed(3)}
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1 text-center">汇总总重量</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">二组</label>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            placeholder="填写"
+                            className="w-full outline-none bg-gray-50 border border-gray-200 apple-input px-3 py-2 text-gray-900 font-mono text-center"
+                            value={totalWeightManual.group2}
+                            onChange={e => updateTotalWeightManual('group2', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">三组</label>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            placeholder="填写"
+                            className="w-full outline-none bg-gray-50 border border-gray-200 apple-input px-3 py-2 text-gray-900 font-mono text-center"
+                            value={totalWeightManual.group3}
+                            onChange={e => updateTotalWeightManual('group3', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 apple-result-box px-4 py-3">
+                        <span className="text-sm text-emerald-800 font-medium">总重</span>
+                        <span className="text-2xl font-bold font-mono text-emerald-900">
+                          {totalWeightSum.toFixed(3)}
+                          <span className="text-sm font-normal ml-1">T</span>
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
