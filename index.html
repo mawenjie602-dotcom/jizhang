@@ -1338,11 +1338,12 @@ const App = function App() {
           outputWeight: 0,
           difference: 0,
           count: 0,
-          hasOutput: false
+          // 组内只要有一行未填产出，该项即视为预计
+          allHaveOutput: true
         };
       }
-      if (String(row.output || '').trim() !== '') {
-        classificationGroups[groupKey].hasOutput = true;
+      if (String(row.output || '').trim() === '') {
+        classificationGroups[groupKey].allHaveOutput = false;
       }
 
       // 特殊重量代入决策链：若产出重量未填写，则自动代入当前行的投入重量进行叠加
@@ -1354,7 +1355,7 @@ const App = function App() {
       classificationGroups[groupKey].difference += rowEffectiveOutput(row) - (Number(row.input) || 0);
       classificationGroups[groupKey].count += 1;
     });
-    return Object.values(classificationGroups);
+    return Object.values(classificationGroups).sort(compareSummaryGroupsByModelAsc);
   }, [rows, sumModalMode]);
 
   // --- 视图分流渲染：1. 后台配置中心 ---
@@ -1633,6 +1634,30 @@ const getModelsWithMultipleLengths = summaryData => {
   });
   return multi;
 };
+// 提取型号中的数字序列，用于从左到右逐位比较
+const extractModelDigits = model => String(model || '').replace(/\D/g, '');
+// 型号数字从小到大：从左往右逐位对比单个数字大小
+const compareModelDigitsAsc = (modelA, modelB) => {
+  const da = extractModelDigits(modelA);
+  const db = extractModelDigits(modelB);
+  if (!da && !db) {
+    return String(modelA || '').localeCompare(String(modelB || ''), 'zh');
+  }
+  if (!da) return 1;
+  if (!db) return -1;
+  const len = Math.max(da.length, db.length);
+  for (let i = 0; i < len; i++) {
+    const ca = i < da.length ? da.charCodeAt(i) - 48 : -1;
+    const cb = i < db.length ? db.charCodeAt(i) - 48 : -1;
+    if (ca !== cb) return ca - cb;
+  }
+  return String(modelA || '').localeCompare(String(modelB || ''), 'zh');
+};
+const compareSummaryGroupsByModelAsc = (a, b) => {
+  const byModel = compareModelDigitsAsc(a.model, b.model);
+  if (byModel !== 0) return byModel;
+  return compareModelDigitsAsc(a.length, b.length);
+};
 const formatGroupText = (group, modelsWithMultiLength, showTotalFeatures) => {
   let label = group.model;
   if (modelsWithMultiLength.has(group.model)) {
@@ -1640,7 +1665,7 @@ const formatGroupText = (group, modelsWithMultiLength, showTotalFeatures) => {
     label += '(' + len + ')';
   }
   const inputStr = formatSumInt(group.input);
-  const outputPrefix = showTotalFeatures && !group.hasOutput ? '预计产' : '产';
+  const outputPrefix = showTotalFeatures && !group.allHaveOutput ? '预计产' : '产';
   const outputStr = formatSumInt(group.output);
   const diff = Number(group.difference) || 0;
   let diffPart = '';
@@ -1752,7 +1777,7 @@ const SumModal = function SumModal({
     className: "px-2 py-2 text-right font-mono text-blue-600"
   }, formatSumInt(group.input)), /*#__PURE__*/React.createElement("td", {
     className: "px-2 py-2 text-right font-mono text-green-600"
-  }, showTotalFeatures && !group.hasOutput && /*#__PURE__*/React.createElement("span", {
+  }, showTotalFeatures && !group.allHaveOutput && /*#__PURE__*/React.createElement("span", {
     className: "text-amber-500 text-[10px] mr-0.5"
   }, "\u9884\u8BA1"), formatSumInt(group.output)), /*#__PURE__*/React.createElement("td", {
     className: "px-2 py-2 text-right font-mono text-gray-800"
