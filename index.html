@@ -90,6 +90,9 @@
       --excel-rowhead-w: 2.75rem;
       --page-bg: #f2f2f7;
       --page-frame: #e5e5ea;
+      --app-viewport-height: 100dvh;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
     html {
       font-size: calc(16px * var(--app-font-scale, 1));
@@ -100,22 +103,27 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      min-height: 100dvh;
-      height: 100dvh;
+      min-height: var(--app-viewport-height);
+      height: var(--app-viewport-height);
       background: var(--page-bg);
       overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
     }
+    #root { width: 100%; height: var(--app-viewport-height); }
     .app-page {
       display: flex;
       flex-direction: column;
       width: 100%;
-      height: 100dvh;
-      max-height: 100dvh;
+      height: var(--app-viewport-height);
+      max-height: var(--app-viewport-height);
       background: var(--page-bg);
       border-radius: 0;
       overflow: hidden;
       box-shadow: none;
+      box-sizing: border-box;
     }
+    .pb-safe { padding-bottom: var(--safe-bottom); }
     .apple-card {
       background: #fff;
       border-radius: var(--apple-r);
@@ -138,11 +146,9 @@
       .accounting-table tbody td.table-corner-bl,
       .accounting-table tbody td.table-corner-br,
       .accounting-table input.cell-input,
-      .accounting-table .picker-arrow-btn,
       .accounting-table .row-action-btn,
       .header-sum-btn,
       .table-row-btn,
-      .picker-menu,
       .font-size-preview,
       .font-size-default-btn,
       .font-size-confirm-btn {
@@ -212,15 +218,15 @@
     }
     .table-action-bar-anchor {
       position: sticky;
-      left: 50%;
-      width: 0;
+      left: 0;
+      width: 100vw;
       overflow: visible;
       z-index: 25;
       flex-shrink: 0;
     }
     .table-action-bar {
       position: relative;
-      left: 0;
+      left: 50%;
       transform: translateX(-50%);
       z-index: 25;
       display: flex;
@@ -228,7 +234,7 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 0.75rem;
+      gap: clamp(0.35rem, 2vw, 0.75rem);
       padding: 1rem 0 0.5rem;
       width: max-content;
       box-sizing: border-box;
@@ -319,47 +325,99 @@
       flex: 0 1 auto;
       text-align: center;
     }
-    .picker-arrow-btn {
-      flex: 0 0 22px;
-      width: 22px;
-      height: 22px;
+    .model-picker-input { cursor: pointer; }
+    .model-picker-popup {
+      position: fixed;
+      z-index: 99999;
+      width: min(360px, calc(100vw - 16px));
+      max-height: min(480px, calc(var(--app-viewport-height) - 16px));
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 18px 48px rgba(0,0,0,.2);
+    }
+    .model-picker-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f1f3;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .model-picker-close {
+      width: 28px;
+      height: 28px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid #d1d5db;
-      border-radius: var(--apple-r-xs);
-      background: #f9fafb;
+      border-radius: 9px;
       color: #6b7280;
-      cursor: pointer;
-      padding: 0;
+      font-size: 20px;
       line-height: 1;
-      font-size: 10px;
     }
-    .picker-arrow-btn:hover { background: #eff6ff; color: #2563eb; border-color: #93c5fd; }
-    .picker-menu {
-      position: fixed;
-      z-index: 99999;
-      max-height: 176px;
-      overflow: auto;
+    .model-picker-close:hover { background: #f3f4f6; color: #111827; }
+    .model-picker-tools { padding: 10px; border-bottom: 1px solid #f0f1f3; background: #fafafa; }
+    .model-picker-search,
+    .model-picker-add-input {
+      min-width: 0;
+      border: 1px solid #dfe3e8;
       background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
-      padding: 4px 0;
-    }
-    .picker-menu-item {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 8px 12px;
+      border-radius: 10px;
+      padding: 8px 10px;
       font-size: 12px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      color: #374151;
+      outline: none;
     }
-    .picker-menu-item:hover { background: #f3f4f6; }
-    .picker-menu-item.active { background: #eff6ff; color: #1d4ed8; }
+    .model-picker-search { width: 100%; margin-bottom: 8px; }
+    .model-picker-search:focus,
+    .model-picker-add-input:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px #dbeafe; }
+    .model-picker-add-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr) auto; gap: 6px; }
+    .model-preset-card { display: flex; flex-direction: column; }
+    .model-preset-add-row { order: 1; }
+    .model-preset-list { order: 2; }
+    .model-picker-add-btn {
+      padding: 0 12px;
+      border-radius: 10px;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .model-picker-add-btn:disabled { opacity: .4; }
+    .model-picker-list { flex: 1 1 auto; min-height: 72px; overflow: auto; padding: 5px; }
+    .model-picker-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      text-align: left;
+      color: #374151;
+      font-size: 12px;
+    }
+    .model-picker-item:hover { background: #f3f4f6; }
+    .model-picker-item.active { background: #eff6ff; color: #1d4ed8; }
+    .model-picker-item-model { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+    .model-picker-item-length { flex: 0 0 auto; color: #6b7280; font-variant-numeric: tabular-nums; }
+    .model-preset-heading { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .model-preset-heading h2 { margin: 0; flex: 0 1 auto; }
+    .model-preset-search { flex: 1 1 90px; width: 90px; }
+    .bound-preset-row { display: flex; align-items: center; gap: 8px; }
+    .bound-preset-values { display: flex; align-items: baseline; gap: 6px; min-width: 0; flex: 1; flex-wrap: wrap; }
+    .bound-preset-label { min-width: 0; overflow-wrap: anywhere; }
+    .bound-preset-length { color: #6b7280; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .bound-preset-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .model-preset-edit-button { padding: 7px 8px; font-size: 12px; color: #2563eb; border-radius: 8px; white-space: nowrap; }
+    .model-preset-edit-button:hover { background: #eff6ff; }
+    .model-preset-edit-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .75fr); gap: 6px; }
+    .model-preset-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .model-preset-error { color: #b91c1c; font-size: 12px; margin: 6px 0 0; }
     .table-page-body { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; padding: 0; box-sizing: border-box; }
     .table-page-body .table-shell {
       border-radius: 0;
@@ -391,7 +449,7 @@
       align-items: center;
       gap: 0.5rem;
       font-weight: 600;
-      padding: 0.625rem 1.5rem;
+      padding: 0.625rem clamp(0.75rem, 4vw, 1.5rem);
       border-radius: 9999px;
       background: #fff;
       box-shadow: 0 1px 2px rgba(0,0,0,.05);
@@ -435,19 +493,21 @@
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
-      padding: 0.75rem 1rem;
+      padding: calc(0.75rem + var(--safe-top)) 1rem 0.75rem;
       background: #fff;
       border-bottom: 1px solid rgba(229, 231, 235, 0.55);
       min-height: 3rem;
     }
+    .settings-header { padding-top: calc(0.75rem + var(--safe-top)); }
     .app-header-side {
       flex: 0 1 auto;
       min-width: 0;
       z-index: 1;
     }
-    .app-header-side-left { max-width: 46%; }
+    .app-header-side-left { flex: 1 1 auto; max-width: none; }
     .app-header-side-right {
-      max-width: 46%;
+      flex: 0 0 auto;
+      max-width: none;
       display: flex;
       justify-content: flex-end;
       align-items: center;
@@ -476,6 +536,16 @@
       .app-header-title-nudge {
         transform: translate(calc(-50% + 0.5rem), -50%);
       }
+      .app-header { padding-left: 0.625rem; padding-right: 0.625rem; gap: 0.25rem; }
+      .header-sum-btn { min-width: 3.75rem; padding: 0 0.45rem; }
+      .model-picker-popup { border-radius: 14px; }
+    }
+    @media (max-width: 350px) {
+      .app-header { padding-left: 0.375rem; padding-right: 0.375rem; }
+      .app-header-side-left { gap: 0.375rem; }
+      .header-sum-btn { min-width: 3.4rem; padding: 0 0.3rem; font-size: 0.7rem; }
+      .model-picker-add-row { grid-template-columns: minmax(0, 1fr) minmax(0, .65fr) auto; gap: 4px; }
+      .model-picker-add-btn { padding: 0 9px; }
     }
     .font-size-slider {
       width: 100%;
@@ -553,6 +623,12 @@
     .header-sum-btn-total:hover { background: #15803d; }
     .header-sum-btn-sum { background: #3b82f6; }
     .header-sum-btn-sum:hover { background: #2563eb; }
+    @media (max-width: 420px) {
+      .header-sum-btn { min-width: 3.75rem; padding: 0 0.45rem; }
+    }
+    @media (max-width: 350px) {
+      .header-sum-btn { min-width: 3.4rem; padding: 0 0.3rem; font-size: 0.7rem; }
+    }
   </style>
 </head>
 <body class="m-0">
@@ -578,6 +654,120 @@ try {
     }
   }
 } catch (e) {}
+const getAppViewportMetrics = () => {
+  const viewport = window.visualViewport;
+  return {
+    width: viewport ? viewport.width : window.innerWidth,
+    height: viewport ? viewport.height : window.innerHeight,
+    left: viewport ? viewport.offsetLeft : 0,
+    top: viewport ? viewport.offsetTop : 0
+  };
+};
+const ensureFocusedInputVisible = () => {
+  const active = document.activeElement;
+  if (!active || !active.matches || !active.matches('input, textarea, select, [contenteditable="true"]')) return;
+  const viewport = getAppViewportMetrics();
+  const rect = active.getBoundingClientRect();
+  const safeTop = viewport.top + 12;
+  const safeBottom = viewport.top + viewport.height - 16;
+  if (rect.top < safeTop || rect.bottom > safeBottom) {
+    try {
+      active.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+    } catch (e) {
+      active.scrollIntoView(false);
+    }
+  }
+};
+// 使用“应用还需要避让的高度”，而不是直接重复添加整个设备状态栏高度。
+// https://www.html5plus.org/doc/zh_cn/navigator.html#plus.navigator.SafeAreaInsets
+const getNativeTopInset = runtime => {
+  const nav = runtime && runtime.navigator;
+  if (!nav) return 0;
+  try {
+    if (typeof nav.getSafeAreaInsets === 'function') {
+      const area = nav.getSafeAreaInsets();
+      // 0 是有效值：表示原生窗口已处理安全区，不能回退为状态栏高度。
+      if (area && typeof area.top === 'number' && Number.isFinite(area.top) && area.top >= 0) {
+        return area.top;
+      }
+    }
+  } catch (e) {}
+  // 兼容旧版运行环境；网页版不调用此逻辑，仍使用 CSS env()。
+  try {
+    if (nav.isImmersedStatusbar && nav.isImmersedStatusbar() && nav.getStatusbarHeight) {
+      return Math.max(0, Number(nav.getStatusbarHeight()) || 0);
+    }
+  } catch (e) {}
+  return 0;
+};
+const installMobileViewportSupport = () => {
+  let frame = 0;
+  let lastHeight = 0;
+  const update = () => {
+    frame = 0;
+    const viewport = getAppViewportMetrics();
+    const height = Math.max(240, Math.round(viewport.height));
+    const keyboardHeight = Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.top));
+    if (height !== lastHeight) {
+      document.documentElement.style.setProperty('--app-viewport-height', height + 'px');
+      lastHeight = height;
+    }
+    document.documentElement.toggleAttribute('data-keyboard-open', keyboardHeight > 80);
+    ensureFocusedInputVisible();
+  };
+  const scheduleUpdate = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+  window.addEventListener('resize', scheduleUpdate, { passive: true });
+  window.addEventListener('orientationchange', scheduleUpdate, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', scheduleUpdate, { passive: true });
+    window.visualViewport.addEventListener('scroll', scheduleUpdate, { passive: true });
+  }
+  let focusTimers = [];
+  const clearFocusTimers = () => {
+    focusTimers.forEach(clearTimeout);
+    focusTimers = [];
+  };
+  document.addEventListener('focusin', () => {
+    clearFocusTimers();
+    scheduleUpdate();
+    focusTimers = [180, 420].map(delay => setTimeout(ensureFocusedInputVisible, delay));
+  });
+  document.addEventListener('focusout', () => {
+    clearFocusTimers();
+    scheduleUpdate();
+  });
+  const syncNativeSafeArea = () => {
+    if (!window.plus) return;
+    const value = getNativeTopInset(window.plus) + 'px';
+    if (document.documentElement.style.getPropertyValue('--safe-top') !== value) {
+      document.documentElement.style.setProperty('--safe-top', value);
+    }
+  };
+  let nativeSafeAreaInstalled = false;
+  const configurePlusRuntime = () => {
+    try {
+      const current = plus.webview.currentWebview();
+      current.setStyle({ top: '0px', softinputMode: 'adjustResize', bounce: 'none', scrollIndicator: 'none' });
+      if (plus.navigator && plus.navigator.setStatusBarBackground) plus.navigator.setStatusBarBackground('#FFFFFF');
+    } catch (e) {
+      console.warn('移动端窗口配置未应用', e);
+    }
+    // 先应用窗口位置，再读取剩余安全区；下一帧复核异步原生布局。
+    syncNativeSafeArea();
+    requestAnimationFrame(syncNativeSafeArea);
+    if (!nativeSafeAreaInstalled) {
+      nativeSafeAreaInstalled = true;
+      document.addEventListener('resume', syncNativeSafeArea);
+      window.addEventListener('orientationchange', syncNativeSafeArea, { passive: true });
+    }
+    scheduleUpdate();
+  };
+  if (window.plus) configurePlusRuntime();else document.addEventListener('plusready', configurePlusRuntime, { once: true });
+  update();
+};
+installMobileViewportSupport();
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const DEFAULT_FONT_SCALE = 1;
 const MIN_FONT_SCALE = 0.85;
@@ -592,15 +782,13 @@ const COL_CONFIG = {
     header: '型号',
     placeholder: '型号',
     min: 3,
-    align: 'left',
-    picker: true
+    align: 'left'
   },
   length: {
     header: '长度',
     placeholder: '长度',
     min: 2,
-    align: 'left',
-    picker: true
+    align: 'left'
   },
   unitWeight: {
     header: '单重',
@@ -645,10 +833,41 @@ const charWeight = text => {
   for (let i = 0; i < s.length; i++) n += s.charCodeAt(i) > 127 ? 2 : 1;
   return n;
 };
-const sortByRecent = (allItems, recentItems) => {
-  const recent = recentItems.filter(item => allItems.includes(item));
-  const rest = allItems.filter(item => !recent.includes(item));
-  return [...recent, ...rest];
+const sortPresetsByRecent = (presets, recentModels) => {
+  const recentIndex = new Map(recentModels.map((model, index) => [model, index]));
+  return presets.map((preset, index) => ({ preset, index })).sort((a, b) => {
+    const ai = recentIndex.has(a.preset.model) ? recentIndex.get(a.preset.model) : Number.MAX_SAFE_INTEGER;
+    const bi = recentIndex.has(b.preset.model) ? recentIndex.get(b.preset.model) : Number.MAX_SAFE_INTEGER;
+    return ai === bi ? a.index - b.index : ai - bi;
+  }).map(item => item.preset);
+};
+
+// 只移除小数部分无意义的尾随 0；整数 10 不会被改成 1。
+const normalizeLengthValue = value => {
+  const raw = String(value == null ? '' : value).trim();
+  if (!raw) return '';
+  return raw.replace(/(\d+\.\d*?[1-9])0+(?=\D*$)/, '$1').replace(/(\d+)\.0+(?=\D*$)/, '$1');
+};
+// 型号数字从首位依次匹配，与主表选择弹窗保持一致。
+const matchesModelSearch = (model, search) => {
+  const query = search.trim().toLowerCase();
+  if (!query) return true;
+  const queryDigits = query.replace(/\D/g, '');
+  return queryDigits
+    ? model.replace(/\D/g, '').startsWith(queryDigits)
+    : model.toLowerCase().startsWith(query);
+};
+const normalizeModelPreset = preset => ({
+  model: String(preset && preset.model != null ? preset.model : '').trim(),
+  length: normalizeLengthValue(preset && preset.length)
+});
+const upsertModelPreset = (presets, model, length) => {
+  const nextPreset = normalizeModelPreset({ model, length });
+  if (!nextPreset.model || !nextPreset.length) return presets;
+  const index = presets.findIndex(item => item.model === nextPreset.model);
+  if (index < 0) return [...presets, nextPreset];
+  if (presets[index].length === nextPreset.length) return presets;
+  return presets.map((item, itemIndex) => itemIndex === index ? nextPreset : item);
 };
 
 // 有产出时自动计算差值 = 产出 - 投入；无产出则不填充
@@ -718,25 +937,31 @@ const clearRowFields = row => applyAutoRow({
   outputWeight: '',
   difference: ''
 });
-const countColumnValues = (rows, field) => {
+const countModelLengthPairs = rows => {
   const counts = {};
   rows.forEach(row => {
-    const val = String(row[field] || '').trim();
-    if (!val) return;
-    counts[val] = (counts[val] || 0) + 1;
+    const model = String(row.model || '').trim();
+    const length = normalizeLengthValue(row.length);
+    if (!model || !length) return;
+    const key = model + '\u0000' + length;
+    counts[key] = (counts[key] || 0) + 1;
   });
   return counts;
 };
-const collectAutoPresetAdds = (rows, field, existing) => {
-  const counts = countColumnValues(rows, field);
-  return Object.keys(counts).filter(val => counts[val] >= 2 && !existing.includes(val));
+const collectAutoPresetAdds = (rows, existing) => {
+  const counts = countModelLengthPairs(rows);
+  const existingModels = new Set(existing.map(item => item.model));
+  return Object.keys(counts).filter(key => counts[key] >= 2).map(key => {
+    const [model, length] = key.split('\u0000');
+    return { model, length };
+  }).filter(item => !existingModels.has(item.model));
 };
 const generateId = () => Math.random().toString(36).substr(2, 9);
 const sanitizeRow = row => applyAutoRow({
   id: row && row.id ? row.id : generateId(),
   selected: !!(row && row.selected),
   model: row && row.model != null ? String(row.model) : '',
-  length: row && row.length != null ? String(row.length) : '',
+  length: normalizeLengthValue(row && row.length != null ? row.length : ''),
   unitWeight: row && row.unitWeight != null ? String(row.unitWeight) : '',
   input: row && row.input != null ? String(row.input) : '',
   inputWeight: row && row.inputWeight != null ? String(row.inputWeight) : '',
@@ -769,10 +994,31 @@ const loadAppCache = () => {
 const saveAppCache = data => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (e) {}
+    // 新缓存写入成功后才清除旧版副本，避免迁移失败导致数据丢失。
+    Object.values(LEGACY_KEYS).forEach(key => localStorage.removeItem(key));
+    return true;
+  } catch (e) {
+    console.warn('本机缓存保存失败', e);
+    return false;
+  }
 };
-const defaultModels = ['iPhone 15', 'iPhone 15 Pro', 'MacBook Air'];
-const defaultLengths = ['10m', '20m', '50m'];
+const MAX_UNDO_ROWS = 30;
+const MAX_RECENT_MODELS = 100;
+const normalizeRecentModels = values => [...new Set(
+  values.filter(value => typeof value === 'string').map(value => value.trim()).filter(Boolean)
+)].slice(0, MAX_RECENT_MODELS);
+const discardRowUndo = (snapshots, id) => {
+  if (!Object.prototype.hasOwnProperty.call(snapshots, id)) return snapshots;
+  const next = { ...snapshots };
+  delete next[id];
+  return next;
+};
+const rememberRowUndo = (snapshots, row) => {
+  const entries = Object.entries(snapshots).filter(([id]) => id !== row.id);
+  entries.push([row.id, snapshotRowData(row)]);
+  return Object.fromEntries(entries.slice(-MAX_UNDO_ROWS));
+};
+const defaultModelPresets = [{ model: 'iPhone 15', length: '10m' }, { model: 'iPhone 15 Pro', length: '20m' }, { model: 'MacBook Air', length: '50m' }];
 const buildBlankRows = () => Array.from({
   length: 15
 }).map(() => ({
@@ -791,25 +1037,40 @@ let _initState;
 const getInitState = () => {
   if (_initState) return _initState;
   const cache = loadAppCache();
-  let models = Array.isArray(cache.models) ? cache.models : defaultModels;
-  let lengths = Array.isArray(cache.lengths) ? cache.lengths : defaultLengths;
-  const recentModels = Array.isArray(cache.recentModels) ? cache.recentModels : [];
-  const recentLengths = Array.isArray(cache.recentLengths) ? cache.recentLengths : [];
+  const recentModels = normalizeRecentModels(Array.isArray(cache.recentModels) ? cache.recentModels : []);
   let rows;
   if (Array.isArray(cache.rows) && cache.rows.length > 0) {
     rows = cache.rows.map(row => sanitizeRow(row));
   } else {
     rows = buildBlankRows();
   }
-  const modelAdds = collectAutoPresetAdds(rows, 'model', models);
-  if (modelAdds.length) models = [...models, ...modelAdds];
-  const lengthAdds = collectAutoPresetAdds(rows, 'length', lengths);
-  if (lengthAdds.length) lengths = [...lengths, ...lengthAdds];
+  let modelPresets = [];
+  if (Array.isArray(cache.modelPresets)) {
+    cache.modelPresets.forEach(item => {
+      modelPresets = upsertModelPreset(modelPresets, item && item.model, item && item.length);
+    });
+  } else if (Array.isArray(cache.models) || Array.isArray(cache.lengths)) {
+    const legacyModels = Array.isArray(cache.models) ? cache.models : [];
+    const legacyLengths = Array.isArray(cache.lengths) ? cache.lengths : [];
+    legacyModels.forEach((model, index) => {
+      const rowMatch = rows.find(row => String(row.model || '').trim() === String(model || '').trim() && String(row.length || '').trim());
+      const length = rowMatch ? rowMatch.length : legacyLengths[index];
+      modelPresets = upsertModelPreset(modelPresets, model, length);
+    });
+  } else {
+    modelPresets = defaultModelPresets.map(item => ({ ...item }));
+  }
+  // 仅迁移旧缓存时从历史行补充预设，避免覆盖用户保存的修改或恢复已删除的型号。
+  if (!Array.isArray(cache.modelPresets)) {
+    rows.forEach(row => {
+      modelPresets = upsertModelPreset(modelPresets, row.model, row.length);
+    });
+    const modelAdds = collectAutoPresetAdds(rows, modelPresets);
+    if (modelAdds.length) modelPresets = [...modelPresets, ...modelAdds];
+  }
   _initState = {
-    models,
-    lengths,
+    modelPresets,
     recentModels,
-    recentLengths,
     rows,
     fontScale: clampFontScale(cache.fontScale),
     crewName: typeof cache.crewName === 'string' ? cache.crewName : ''
@@ -819,6 +1080,19 @@ const getInitState = () => {
 
 // 内置原生高质量 SVG 图标，脱离网络依赖
 const Icons = {
+  Pencil: () => React.createElement("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className: "w-4 h-4",
+    "aria-hidden": true,
+    focusable: "false"
+  }, React.createElement("path", {
+    d: "M16 3a2.12 2.12 0 0 1 3 3L7 18l-4 1 1-4L16 3zM14 5l3 3"
+  })),
   Settings: () => /*#__PURE__*/React.createElement("svg", {
     viewBox: "0 0 24 24",
     fill: "none",
@@ -973,14 +1247,6 @@ function useColumnWidths(rows) {
 }
 const getColWidthStyle = (field, columnWidths) => {
   const w = `${columnWidths[field]}ch`;
-  if (COL_CONFIG[field].picker) {
-    const width = `calc(${w} + 30px)`;
-    return {
-      width,
-      minWidth: width,
-      maxWidth: width
-    };
-  }
   return {
     width: w,
     minWidth: w,
@@ -1007,31 +1273,25 @@ const renderTableColGroup = (columnWidths, pixelWidths) => /*#__PURE__*/React.cr
   style: pixelWidths ? colPxStyle(pixelWidths[pixelWidths.length - 1]) : undefined
 }));
 const getColumnWidthsKey = columnWidths => Object.keys(COL_CONFIG).map(field => `${field}:${columnWidths[field]}`).join('|');
-function useSplitTableColSync(splitStackRef, columnWidths, rows) {
-  const widthsKey = React.useMemo(() => getColumnWidthsKey(columnWidths), [columnWidths]);
+function useSplitTableColSync(splitStackRef, columnWidths, rowCount, fontScale, view) {
+  const widthsKey = React.useMemo(() => getColumnWidthsKey(columnWidths) + '|scale:' + fontScale, [columnWidths, fontScale]);
   const [syncState, setSyncState] = React.useState({
     key: '',
     widths: null
   });
   React.useLayoutEffect(() => {
     const stack = splitStackRef.current;
-    if (!stack || rows.length === 0) {
-      setSyncState({
-        key: widthsKey,
-        widths: null
-      });
-      return;
-    }
+    if (!stack || rowCount === 0) return;
     const bodyRow = stack.querySelector('.accounting-table-body tbody tr');
     if (!bodyRow) return;
     const cells = [...bodyRow.children];
     if (cells.length < 10) return;
     const measured = cells.map(cell => cell.getBoundingClientRect().width);
-    setSyncState({
-      key: widthsKey,
-      widths: measured
-    });
-  }, [splitStackRef, widthsKey, rows]);
+    setSyncState(prev => prev.key === widthsKey && prev.widths &&
+      prev.widths.length === measured.length &&
+      prev.widths.every((width, index) => Math.abs(width - measured[index]) < 0.1)
+      ? prev : { key: widthsKey, widths: measured });
+  }, [splitStackRef, widthsKey, rowCount, view]);
   return syncState.key === widthsKey ? syncState.widths : null;
 }
 
@@ -1054,143 +1314,258 @@ const ColumnInput = React.memo(function ColumnInputImpl({
     className: `cell-input bg-transparent outline-none px-2 py-1.5 select-text text-center ${className}`
   }, props));
 });
-const PickerCell = React.memo(function PickerCellImpl({
+const ModelPickerCell = React.memo(function ModelPickerCellImpl({
   value,
-  onChange,
+  length,
+  onSelect,
   onPick,
+  onAddPreset,
   options,
-  field,
   columnWidths
 }) {
   const [open, setOpen] = React.useState(false);
   const [menuPos, setMenuPos] = React.useState(null);
+  const [search, setSearch] = React.useState('');
+  const [draftModel, setDraftModel] = React.useState('');
+  const [draftLength, setDraftLength] = React.useState('');
   const wrapRef = React.useRef(null);
-  const menuIdRef = React.useRef('picker-menu-' + generateId());
-  const cfg = COL_CONFIG[field];
-  const size = Math.max(columnWidths[field], charWeight(value || cfg.placeholder) + 1);
-  const openMenu = btn => {
-    const rect = btn.getBoundingClientRect();
+  const popupRef = React.useRef(null);
+  const size = Math.max(columnWidths.model, charWeight(value || COL_CONFIG.model.placeholder) + 1);
+  const positionMenu = React.useCallback(input => {
+    if (!input) return;
+    const rect = input.getBoundingClientRect();
+    const viewport = getAppViewportMetrics();
+    const width = Math.min(360, Math.max(240, viewport.width - 16));
+    const maxHeight = Math.max(224, Math.min(480, viewport.height - 16));
+    let left = rect.right + 8;
+    const rightLimit = viewport.left + viewport.width - 8;
+    if (left + width > rightLimit) left = Math.max(viewport.left + 8, Math.min(rect.left, rightLimit - width));
+    const topLimit = viewport.top + viewport.height - maxHeight - 8;
+    const top = Math.max(viewport.top + 8, Math.min(rect.top, topLimit));
     setMenuPos({
-      top: rect.bottom + 4,
-      left: rect.left,
-      minWidth: Math.max(rect.width + 80, 140)
+      top,
+      left,
+      width,
+      maxHeight
     });
+  }, []);
+  const openMenu = input => {
+    positionMenu(input);
+    setSearch('');
     setOpen(true);
   };
   React.useEffect(() => {
     if (!open) return;
-    const menuId = menuIdRef.current;
-    const onDocClick = e => {
+    const onDocPointerDown = e => {
       const wrap = wrapRef.current;
-      const menu = document.getElementById(menuId);
       if (wrap && wrap.contains(e.target)) return;
-      if (menu && menu.contains(e.target)) return;
+      if (popupRef.current && popupRef.current.contains(e.target)) return;
       setOpen(false);
     };
-    const timer = setTimeout(() => document.addEventListener('click', onDocClick), 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('click', onDocClick);
+    const onKeyDown = e => {
+      if (e.key === 'Escape') setOpen(false);
     };
-  }, [open]);
+    let viewportFrame = 0;
+    const reposition = () => {
+      if (viewportFrame) cancelAnimationFrame(viewportFrame);
+      viewportFrame = requestAnimationFrame(() => {
+        viewportFrame = 0;
+        const input = wrapRef.current && wrapRef.current.querySelector('.model-picker-input');
+        positionMenu(input);
+        ensureFocusedInputVisible();
+      });
+    };
+    document.addEventListener('pointerdown', onDocPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', reposition, { passive: true });
+    window.addEventListener('scroll', reposition, true);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', reposition, { passive: true });
+      window.visualViewport.addEventListener('scroll', reposition, { passive: true });
+    }
+    return () => {
+      if (viewportFrame) cancelAnimationFrame(viewportFrame);
+      document.removeEventListener('pointerdown', onDocPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', reposition);
+        window.visualViewport.removeEventListener('scroll', reposition);
+      }
+    };
+  }, [open, positionMenu]);
+  const filteredOptions = React.useMemo(() => options.filter(item => matchesModelSearch(item.model, search)), [options, search]);
   const selectItem = item => {
-    onChange(item);
-    onPick(item);
+    onSelect(item);
+    onPick(item.model);
     setOpen(false);
+  };
+  const fireAdd = () => {
+    const model = draftModel.trim();
+    const normalizedLength = normalizeLengthValue(draftLength);
+    if (!model || !normalizedLength) return;
+    onAddPreset(model, normalizedLength);
+    setDraftModel('');
+    setDraftLength('');
+    setSearch(model);
   };
   return /*#__PURE__*/React.createElement("div", {
     ref: wrapRef,
     className: "picker-wrap"
   }, /*#__PURE__*/React.createElement("input", {
     value: value,
-    onChange: e => onChange(e.target.value),
-    onBlur: () => {
-      if (value.trim()) onPick(value.trim());
+    readOnly: true,
+    onClick: e => openMenu(e.currentTarget),
+    onKeyDown: e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openMenu(e.currentTarget);
+      }
     },
-    placeholder: cfg.placeholder,
+    placeholder: COL_CONFIG.model.placeholder,
     size: size,
-    className: "picker-text cell-input bg-transparent outline-none px-2 py-1.5 font-medium text-gray-800 focus:bg-blue-50/40 select-text text-center"
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "picker-arrow-btn",
-    "aria-label": "\u5C55\u5F00\u9009\u9879",
-    onClick: e => {
-      e.stopPropagation();
-      if (open) setOpen(false);else openMenu(e.currentTarget);
-    }
-  }, "\u25BC"), open && menuPos && ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
-    id: menuIdRef.current,
-    className: "picker-menu",
+    "aria-haspopup": "dialog",
+    "aria-expanded": open,
+    className: "model-picker-input picker-text cell-input bg-transparent outline-none px-2 py-1.5 font-medium text-gray-800 focus:bg-blue-50/40 select-text text-center"
+  }), open && menuPos && ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
+    ref: popupRef,
+    className: "model-picker-popup",
+    role: "dialog",
+    "aria-label": "\u9009\u62E9\u578B\u53F7",
     style: {
       top: menuPos.top,
       left: menuPos.left,
-      minWidth: menuPos.minWidth
+      width: menuPos.width,
+      maxHeight: menuPos.maxHeight
     }
-  }, options.length === 0 ? /*#__PURE__*/React.createElement("p", {
-    className: "px-3 py-2 text-xs text-gray-400 text-center"
-  }, "\u6682\u65E0\u9884\u9009\u9879") : options.map(item => /*#__PURE__*/React.createElement("button", {
-    key: item,
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "model-picker-head"
+  }, /*#__PURE__*/React.createElement("span", null, "\u9009\u62E9\u578B\u53F7"), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: 'picker-menu-item' + (value === item ? ' active' : ''),
+    className: "model-picker-close",
+    onClick: () => setOpen(false),
+    "aria-label": "\u5173\u95ED"
+  }, "\xD7")), /*#__PURE__*/React.createElement("div", {
+    className: "model-picker-tools"
+  }, /*#__PURE__*/React.createElement("input", {
+    autoFocus: true,
+    type: "search",
+    value: search,
+    onChange: e => setSearch(e.target.value),
+    placeholder: "\u641C\u7D22\u578B\u53F7\u6570\u5B57",
+    className: "model-picker-search"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "model-picker-add-row"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: draftModel,
+    onChange: e => setDraftModel(e.target.value),
+    placeholder: "\u578B\u53F7",
+    className: "model-picker-add-input"
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    inputMode: "decimal",
+    value: draftLength,
+    onChange: e => setDraftLength(e.target.value),
+    onKeyDown: e => e.key === 'Enter' && fireAdd(),
+    placeholder: "\u957F\u5EA6",
+    className: "model-picker-add-input"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: fireAdd,
+    disabled: !draftModel.trim() || !draftLength.trim(),
+    className: "model-picker-add-btn"
+  }, "\u6DFB\u52A0"))), /*#__PURE__*/React.createElement("div", {
+    className: "model-picker-list"
+  }, filteredOptions.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "px-3 py-4 text-xs text-gray-400 text-center"
+  }, "\u6682\u65E0\u5339\u914D\u578B\u53F7") : filteredOptions.map(item => /*#__PURE__*/React.createElement("button", {
+    key: item.model,
+    type: "button",
+    className: 'model-picker-item' + (value === item.model && length === item.length ? ' active' : ''),
     onClick: () => selectItem(item)
-  }, item))), document.body));
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "model-picker-item-model"
+  }, item.model), /*#__PURE__*/React.createElement("span", {
+    className: "model-picker-item-length"
+  }, item.length))))), document.body));
 });
 const App = function App() {
   const [view, setView] = React.useState('main');
-  const [models, setModels] = React.useState(() => getInitState().models);
-  const [lengths, setLengths] = React.useState(() => getInitState().lengths);
+  const [modelPresets, setModelPresets] = React.useState(() => getInitState().modelPresets);
   const [recentModels, setRecentModels] = React.useState(() => getInitState().recentModels);
-  const [recentLengths, setRecentLengths] = React.useState(() => getInitState().recentLengths);
-  const [rows, setRows] = React.useState(() => getInitState().rows);
+  const [tableState, setTableState] = React.useState(() => ({
+    rows: getInitState().rows, undoSnapshots: {}, saveRevision: 0
+  }));
+  const { rows, undoSnapshots: rowUndoSnapshots, saveRevision } = tableState;
   const [fontScale, setFontScale] = React.useState(() => getInitState().fontScale);
   const [crewName, setCrewName] = React.useState(() => getInitState().crewName);
-  const [rowUndoSnapshots, setRowUndoSnapshots] = React.useState({});
+  const [storageError, setStorageError] = React.useState(false);
+  // 初始数据仅用于首屏初始化，不能永久引用旧行和旧预设。
+  React.useEffect(() => { _initState = null; }, []);
   const [sumModalMode, setSumModalMode] = React.useState(null);
   const columnWidths = useColumnWidths(rows);
   const splitStackRef = React.useRef(null);
-  const pixelColWidths = useSplitTableColSync(splitStackRef, columnWidths, rows);
+  const pixelColWidths = useSplitTableColSync(splitStackRef, columnWidths, rows.length, fontScale, view);
   const splitTableStyle = getSplitTableWidthStyle(pixelColWidths);
-  const tableModels = React.useMemo(() => sortByRecent(models, recentModels), [models, recentModels]);
-  const tableLengths = React.useMemo(() => sortByRecent(lengths, recentLengths), [lengths, recentLengths]);
-  const touchRecent = React.useCallback((type, value) => {
+  const tableModelPresets = React.useMemo(() => sortPresetsByRecent(modelPresets, recentModels), [modelPresets, recentModels]);
+  const touchRecentModel = React.useCallback(value => {
     const trimmed = String(value || '').trim();
     if (!trimmed) return;
-    if (type === 'model') {
-      setRecentModels(prev => [trimmed, ...prev.filter(item => item !== trimmed)]);
-    } else {
-      setRecentLengths(prev => [trimmed, ...prev.filter(item => item !== trimmed)]);
-    }
+    setRecentModels(prev => normalizeRecentModels([trimmed, ...prev]));
   }, []);
   const rowsPresetSynced = React.useRef(true);
   React.useLayoutEffect(() => {
     document.documentElement.style.setProperty('--app-font-scale', String(fontScale));
   }, [fontScale]);
+  const cacheRef = React.useRef(null);
+  const saveTimerRef = React.useRef(null);
+  const savePendingRef = React.useRef(false);
+  const savedRevisionRef = React.useRef(-1);
+  const flushCache = React.useCallback((notify = true) => {
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = null;
+    if (!savePendingRef.current || !cacheRef.current) return;
+    const saved = saveAppCache(cacheRef.current);
+    savePendingRef.current = !saved;
+    if (notify) setStorageError(!saved);
+  }, []);
+  React.useLayoutEffect(() => {
+    // 只保留一份最新待保存数据，定时回调不捕获旧表格。
+    cacheRef.current = { modelPresets, rows, recentModels, fontScale, crewName };
+    savePendingRef.current = true;
+    clearTimeout(saveTimerRef.current);
+    if (savedRevisionRef.current !== saveRevision) {
+      savedRevisionRef.current = saveRevision;
+      flushCache();
+    } else {
+      saveTimerRef.current = setTimeout(flushCache, 400);
+    }
+    return () => clearTimeout(saveTimerRef.current);
+  }, [modelPresets, rows, recentModels, fontScale, crewName, saveRevision, flushCache]);
   React.useEffect(() => {
-    const t = setTimeout(() => {
-      saveAppCache({
-        models,
-        lengths,
-        rows,
-        recentModels,
-        recentLengths,
-        fontScale,
-        crewName
-      });
-    }, 400);
-    return () => clearTimeout(t);
-  }, [models, lengths, rows, recentModels, recentLengths, fontScale, crewName]);
+    const onLeave = () => flushCache();
+    const onVisibility = () => { if (document.hidden) flushCache(); };
+    window.addEventListener('pagehide', onLeave);
+    document.addEventListener('visibilitychange', onVisibility);
+    document.addEventListener('pause', onLeave);
+    return () => {
+      window.removeEventListener('pagehide', onLeave);
+      document.removeEventListener('visibilitychange', onVisibility);
+      document.removeEventListener('pause', onLeave);
+      flushCache(false);
+      cacheRef.current = null;
+    };
+  }, [flushCache]);
   React.useEffect(() => {
     if (rowsPresetSynced.current) {
       rowsPresetSynced.current = false;
       return;
     }
     const run = () => {
-      setModels(prev => {
-        const toAdd = collectAutoPresetAdds(rows, 'model', prev);
-        return toAdd.length ? [...prev, ...toAdd] : prev;
-      });
-      setLengths(prev => {
-        const toAdd = collectAutoPresetAdds(rows, 'length', prev);
+      setModelPresets(prev => {
+        const toAdd = collectAutoPresetAdds(rows, prev);
         return toAdd.length ? [...prev, ...toAdd] : prev;
       });
     };
@@ -1199,125 +1574,114 @@ const App = function App() {
       if (typeof cancelIdleCallback === 'function') cancelIdleCallback(id);else clearTimeout(id);
     };
   }, [rows]);
+  // 表格与撤销记录同时更新，避免嵌套状态更新把旧行重新放回去。
   const updateRow = React.useCallback((id, field, value) => {
-    if (field === 'inputWeight' || field === 'outputWeight' || field === 'difference') return;
-    setRowUndoSnapshots(prev => {
-      if (!prev[id]) return prev;
-      const next = {
-        ...prev
+    if (!['unitWeight', 'input', 'output'].includes(field)) return;
+    setTableState(prev => {
+      const row = prev.rows.find(item => item.id === id);
+      if (!row || row[field] === value) return prev;
+      const undoSnapshots = discardRowUndo(prev.undoSnapshots, id);
+      return {
+        rows: prev.rows.map(item => item.id === id ? applyAutoRow({ ...item, [field]: value }) : item),
+        undoSnapshots,
+        saveRevision: prev.saveRevision + (undoSnapshots !== prev.undoSnapshots ? 1 : 0)
       };
-      delete next[id];
-      return next;
     });
-    setRows(prev => prev.map(row => {
-      if (row.id !== id) return row;
-      let next = {
-        ...row,
-        [field]: value
+  }, []);
+  const selectModelPreset = React.useCallback((id, preset) => {
+    setTableState(prev => {
+      if (!prev.rows.some(row => row.id === id)) return prev;
+      const undoSnapshots = discardRowUndo(prev.undoSnapshots, id);
+      return {
+        rows: prev.rows.map(row => row.id === id ? applyAutoRow({
+          ...row, model: preset.model, length: normalizeLengthValue(preset.length)
+        }) : row),
+        undoSnapshots,
+        saveRevision: prev.saveRevision + (undoSnapshots !== prev.undoSnapshots ? 1 : 0)
       };
-      if (field === 'unitWeight' || field === 'length' || field === 'input' || field === 'output') {
-        next = applyAutoRow(next);
-      }
-      return next;
-    }));
+    });
+  }, []);
+  const addModelPreset = React.useCallback((model, length) => {
+    setModelPresets(prev => upsertModelPreset(prev, model, length));
   }, []);
   const addRow = React.useCallback(() => {
-    setRows(prev => [...prev, {
-      id: generateId(),
-      selected: false,
-      model: '',
-      length: '',
-      unitWeight: '',
-      input: '',
-      inputWeight: '',
-      output: '',
-      outputWeight: '',
-      difference: ''
-    }]);
+    const row = clearRowFields({ id: generateId() });
+    setTableState(prev => ({ ...prev, rows: [...prev.rows, row] }));
   }, []);
   const removeRow = React.useCallback(() => {
-    setRows(prev => {
-      if (prev.length <= 1) return prev;
-      const removedId = prev[prev.length - 1].id;
-      setRowUndoSnapshots(snap => {
-        if (!snap[removedId]) return snap;
-        const next = {
-          ...snap
-        };
-        delete next[removedId];
-        return next;
-      });
-      return prev.slice(0, -1);
+    setTableState(prev => {
+      if (prev.rows.length <= 1) return prev;
+      const removedId = prev.rows[prev.rows.length - 1].id;
+      return {
+        rows: prev.rows.slice(0, -1),
+        undoSnapshots: discardRowUndo(prev.undoSnapshots, removedId),
+        saveRevision: prev.saveRevision + 1
+      };
     });
   }, []);
   const handleClearRow = React.useCallback(id => {
-    setRows(prev => {
-      const row = prev.find(r => r.id === id);
+    setTableState(prev => {
+      const row = prev.rows.find(item => item.id === id);
       if (!row || !isRowFilled(row)) return prev;
-      setRowUndoSnapshots(snap => ({
-        ...snap,
-        [id]: snapshotRowData(row)
-      }));
-      return prev.map(r => r.id === id ? clearRowFields(r) : r);
+      return {
+        rows: prev.rows.map(item => item.id === id ? clearRowFields(item) : item),
+        undoSnapshots: rememberRowUndo(prev.undoSnapshots, row),
+        saveRevision: prev.saveRevision + 1
+      };
     });
   }, []);
   const handleUndoRow = React.useCallback(id => {
-    setRowUndoSnapshots(prev => {
-      const snap = prev[id];
-      if (!snap) return prev;
-      setRows(rows => rows.map(r => r.id === id ? applyAutoRow({
-        ...r,
-        ...snap
-      }) : r));
-      const next = {
-        ...prev
+    setTableState(prev => {
+      const snapshot = prev.undoSnapshots[id];
+      if (!snapshot) return prev;
+      return {
+        // 已填入数据的行不能被旧撤销记录覆盖。
+        rows: prev.rows.map(row => row.id === id && !isRowFilled(row)
+          ? applyAutoRow({ ...row, ...snapshot }) : row),
+        undoSnapshots: discardRowUndo(prev.undoSnapshots, id),
+        saveRevision: prev.saveRevision + 1
       };
-      delete next[id];
-      return next;
     });
   }, []);
   const toggleRowSelection = React.useCallback(id => {
-    setRows(prev => prev.map(row => row.id === id ? {
-      ...row,
-      selected: !row.selected
-    } : row));
+    setTableState(prev => ({ ...prev, rows: prev.rows.map(row => row.id === id
+      ? { ...row, selected: !row.selected } : row) }));
   }, []);
   const toggleAllSelection = React.useCallback(() => {
-    setRows(prev => {
-      const filled = prev.filter(isRowFilled);
+    setTableState(prev => {
+      const filled = prev.rows.filter(isRowFilled);
       if (filled.length === 0) return prev;
-      const allFilledChecked = filled.every(r => r.selected);
-      return prev.map(row => {
-        if (!isRowFilled(row)) return {
-          ...row,
-          selected: false
-        };
-        return {
-          ...row,
-          selected: !allFilledChecked
-        };
-      });
+      const allFilledChecked = filled.every(row => row.selected);
+      return { ...prev, rows: prev.rows.map(row => ({
+        ...row, selected: isRowFilled(row) && !allFilledChecked
+      })) };
     });
   }, []);
   const filledRows = React.useMemo(() => rows.filter(isRowFilled), [rows]);
   const allFilledChecked = filledRows.length > 0 && filledRows.every(r => r.selected);
   const handleClearTableData = () => {
-    if (window.confirm("确定要彻底清空当前表格上的所有记账数据吗？\n（提示：这只会清空表格，设置里的型号和长度列表会完好保留。）")) {
-      setRows(buildBlankRows());
-      setRowUndoSnapshots({});
+    if (window.confirm("确定要彻底清空当前表格上的所有记账数据吗？\n（提示：这只会清空表格，设置里的型号与长度绑定预设会完好保留。）")) {
+      const blankRows = buildBlankRows();
+      setTableState(prev => ({ rows: blankRows, undoSnapshots: {}, saveRevision: prev.saveRevision + 1 }));
     }
   };
 
   // --- 后台设置项控制 ---
-  const addSettingItem = (type, value) => {
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    if (type === 'model' && !models.includes(trimmed)) setModels([...models, trimmed]);
-    if (type === 'length' && !lengths.includes(trimmed)) setLengths([...lengths, trimmed]);
+  const removeModelPreset = index => {
+    const removed = modelPresets[index];
+    setModelPresets(prev => prev.filter((_, itemIndex) => itemIndex !== index));
+    if (removed) setRecentModels(prev => prev.filter(model => model !== removed.model));
   };
-  const removeSettingItem = (type, index) => {
-    if (type === 'model') setModels(models.filter((_, i) => i !== index));
-    if (type === 'length') setLengths(lengths.filter((_, i) => i !== index));
+  const editModelPreset = (originalModel, modelValue, lengthValue) => {
+    const preset = normalizeModelPreset({ model: modelValue, length: lengthValue });
+    if (!preset.model || !preset.length) return '请填写型号和长度';
+    if (!modelPresets.some(item => item.model === originalModel)) return '该预设已不存在';
+    if (modelPresets.some(item => item.model === preset.model && item.model !== originalModel)) return '该型号已存在，请使用其他型号';
+    setModelPresets(prev => prev.map(item => item.model === originalModel ? preset : item));
+    if (preset.model !== originalModel) {
+      setRecentModels(prev => normalizeRecentModels(prev.map(model => model === originalModel ? preset.model : model)));
+    }
+    return '';
   };
 
   // --- 智能多行精准归类求和算法 ---
@@ -1358,12 +1722,16 @@ const App = function App() {
     return Object.values(classificationGroups).sort(compareSummaryGroupsByModelAsc);
   }, [rows, sumModalMode]);
 
+  const storageWarning = storageError ? React.createElement("div", {
+    role: "alert", className: "p-3 text-sm", style: { background: '#fef2f2', color: '#b91c1c' }
+  }, "本机保存失败，请勿关闭应用。请释放存储空间后继续操作；未保存的修改可能丢失。") : null;
+
   // --- 视图分流渲染：1. 后台配置中心 ---
   if (view === 'settings') {
     return /*#__PURE__*/React.createElement("div", {
       className: "app-page flex flex-col text-gray-900 font-sans pb-safe"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200/80 sticky top-0 z-50"
+    }, storageWarning, /*#__PURE__*/React.createElement("div", {
+      className: "settings-header flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200/80 sticky top-0 z-50"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => setView('main'),
       className: "text-blue-500 flex items-center font-semibold text-base"
@@ -1375,29 +1743,24 @@ const App = function App() {
       className: "flex-1 overflow-auto p-4 space-y-6"
     }, /*#__PURE__*/React.createElement("div", {
       className: "apple-card text-xs bg-blue-50/80 text-blue-700 p-3 font-medium leading-relaxed border border-blue-100/80"
-    }, "\u6E29\u99A8\u63D0\u793A\uFF1A\u5728\u6B64\u5904\u5F55\u5165\u7684\u578B\u53F7\u4E0E\u957F\u5EA6\u5C06\u4F5C\u4E3A\u4E0B\u62C9\u83DC\u5355\u3002\u5373\u4F7F\u60A8\u5728\u4E3B\u9875\u70B9\u51FB\u4E86\u201C\u6E05\u7A7A\u201D\uFF0C\u8FD9\u91CC\u7684\u9884\u8BBE\u9879\u4E5F\u4F9D\u7136\u4F1A\u88AB\u5B89\u5168\u7559\u5B58\u3002\u8868\u683C\u4E2D\u7684\u4E0B\u62C9\u987A\u5E8F\u6309\u6700\u8FD1\u4F7F\u7528\u6392\u5217\uFF0C\u4E0D\u5F71\u54CD\u6B64\u5904\u7684\u6DFB\u52A0\u987A\u5E8F\u3002"), /*#__PURE__*/React.createElement(FontSizeSetting, {
+    }, "\u6E29\u99A8\u63D0\u793A\uFF1A\u578B\u53F7\u4E0E\u957F\u5EA6\u4F5C\u4E3A\u4E00\u4E2A\u7ED1\u5B9A\u9884\u8BBE\u4FDD\u5B58\u3002\u4E3B\u9875\u9009\u62E9\u578B\u53F7\u540E\u4F1A\u81EA\u52A8\u5E26\u5165\u957F\u5EA6\uFF0C\u6E05\u7A7A\u8868\u683C\u4E0D\u4F1A\u5220\u9664\u8FD9\u4E9B\u9884\u8BBE\u3002\u9009\u62E9\u987A\u5E8F\u4ECD\u6309\u6700\u8FD1\u4F7F\u7528\u6392\u5217\u3002"), /*#__PURE__*/React.createElement(FontSizeSetting, {
       value: fontScale,
       onConfirm: setFontScale
     }), /*#__PURE__*/React.createElement(CrewSetting, {
       value: crewName,
       onChange: setCrewName
-    }), /*#__PURE__*/React.createElement(SettingSection, {
-      title: "\u578B\u53F7\u9884\u9009\u9879\u7BA1\u7406",
-      items: models,
-      onAdd: val => addSettingItem('model', val),
-      onRemove: idx => removeSettingItem('model', idx)
-    }), /*#__PURE__*/React.createElement(SettingSection, {
-      title: "\u957F\u5EA6\u9884\u9009\u9879\u7BA1\u7406",
-      items: lengths,
-      onAdd: val => addSettingItem('length', val),
-      onRemove: idx => removeSettingItem('length', idx)
+    }), /*#__PURE__*/React.createElement(ModelPresetSetting, {
+      items: modelPresets,
+      onAdd: addModelPreset,
+      onRemove: removeModelPreset,
+      onEdit: editModelPreset
     })));
   }
 
   // --- 视图分流渲染：2. iOS 跑马灯Excel核心账本主页 ---
   return /*#__PURE__*/React.createElement("div", {
     className: "app-page flex flex-col text-gray-900 font-sans pb-safe"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, storageWarning, /*#__PURE__*/React.createElement("div", {
     className: "app-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "app-header-side app-header-side-left flex gap-3"
@@ -1468,22 +1831,23 @@ const App = function App() {
     className: "excel-row-num"
   }, index + 1))), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 data-cell",
-  }, /*#__PURE__*/React.createElement(PickerCell, {
-    field: "model",
+  }, /*#__PURE__*/React.createElement(ModelPickerCell, {
     value: row.model,
-    options: tableModels,
+    length: row.length,
+    options: tableModelPresets,
     columnWidths: columnWidths,
-    onChange: val => updateRow(row.id, 'model', val),
-    onPick: val => touchRecent('model', val)
+    onSelect: preset => selectModelPreset(row.id, preset),
+    onPick: touchRecentModel,
+    onAddPreset: addModelPreset
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 data-cell",
-  }, /*#__PURE__*/React.createElement(PickerCell, {
+  }, /*#__PURE__*/React.createElement(ColumnInput, {
     field: "length",
     value: row.length,
-    options: tableLengths,
     columnWidths: columnWidths,
-    onChange: val => updateRow(row.id, 'length', val),
-    onPick: val => touchRecent('length', val)
+    readOnly: true,
+    "aria-label": "\u957F\u5EA6\u7531\u578B\u53F7\u81EA\u52A8\u5E26\u5165",
+    className: "font-medium text-gray-500"
   })), /*#__PURE__*/React.createElement("td", {
     className: "px-1 py-0.5 data-cell",
   }, /*#__PURE__*/React.createElement(ColumnInput, {
@@ -1586,11 +1950,11 @@ function formatSumInt(num) {
   return String(Math.round(n));
 }
 
-// 求和：重量保留三位小数
+// 总产与求和：重量最多保留三位小数，省略小数末尾的 0
 function formatSumWeight(num) {
   const n = Number(num);
-  if (!Number.isFinite(n)) return '0.000';
-  return n.toFixed(3);
+  if (!Number.isFinite(n)) return '0';
+  return String(Number(n.toFixed(3)));
 }
 const rowOutputWeight = row => {
   const isBlank = row.outputWeight === '' || row.outputWeight == null;
@@ -1654,9 +2018,7 @@ const compareModelDigitsAsc = (modelA, modelB) => {
   return String(modelA || '').localeCompare(String(modelB || ''), 'zh');
 };
 const compareSummaryGroupsByModelAsc = (a, b) => {
-  const byModel = compareModelDigitsAsc(a.model, b.model);
-  if (byModel !== 0) return byModel;
-  return compareModelDigitsAsc(a.length, b.length);
+  return compareModelDigitsAsc(a.model, b.model);
 };
 const formatGroupText = (group, modelsWithMultiLength, showTotalFeatures) => {
   let label = group.model;
@@ -1697,6 +2059,16 @@ const SumModal = function SumModal({
 }) {
   const [viewMode, setViewMode] = React.useState('table');
   const [copied, setCopied] = React.useState(false);
+  const copyStateRef = React.useRef({ mounted: true, pending: false, timer: null });
+  React.useEffect(() => {
+    const state = copyStateRef.current;
+    state.mounted = true;
+    return () => {
+      state.mounted = false;
+      clearTimeout(state.timer);
+      state.timer = null;
+    };
+  }, []);
   const showTotalFeatures = displayMode === 'total';
   const modalTitle = showTotalFeatures ? '总产分项清单' : '求和分项清单';
   const filledRows = React.useMemo(() => rows.filter(isRowFilled), [rows]);
@@ -1705,21 +2077,39 @@ const SumModal = function SumModal({
   const grandTotal = React.useMemo(() => computeGrandTotal(selectedRows), [selectedRows]);
   const textContent = React.useMemo(() => buildSumTextContent(summaryData, allFilledSelected, grandTotal, crewName, showTotalFeatures), [summaryData, allFilledSelected, grandTotal, crewName, showTotalFeatures]);
   const copyText = async () => {
-    if (!textContent) return;
+    const state = copyStateRef.current;
+    if (!textContent || state.pending || !state.mounted) return;
+    state.pending = true;
+    let success = false;
     try {
-      await navigator.clipboard.writeText(textContent);
-    } catch (e) {
-      const ta = document.createElement('textarea');
-      ta.value = textContent;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
+      try {
+        await navigator.clipboard.writeText(textContent);
+        success = true;
+      } catch (e) {
+        if (!state.mounted) return;
+        const ta = document.createElement('textarea');
+        try {
+          ta.value = textContent;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          success = document.execCommand('copy');
+        } finally {
+          ta.remove();
+        }
+      }
+      if (state.mounted && success) {
+        setCopied(true);
+        clearTimeout(state.timer);
+        state.timer = setTimeout(() => {
+          state.timer = null;
+          if (state.mounted) setCopied(false);
+        }, 2000);
+      }
+    } finally {
+      state.pending = false;
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
@@ -1890,51 +2280,106 @@ const FontSizeSetting = function FontSizeSetting({
   }, "\u9884\u89C8\uFF1A\u751F\u4EA7\u8BB0\u8D26\u8868\u683C\u6587\u5B57")));
 };
 
-// 设置后台：卡片条目管理组件
-const SettingSection = function SettingSection({
-  title,
-  items,
-  onAdd,
-  onRemove
-}) {
-  const [inputVal, setInputVal] = React.useState('');
+// 设置后台：型号与长度绑定预设管理
+const ModelPresetSetting = function ModelPresetSetting({ items, onAdd, onRemove, onEdit }) {
+  const [search, setSearch] = React.useState('');
+  const [modelValue, setModelValue] = React.useState('');
+  const [lengthValue, setLengthValue] = React.useState('');
+  const [editingModel, setEditingModel] = React.useState(null);
+  const [editModel, setEditModel] = React.useState('');
+  const [editLength, setEditLength] = React.useState('');
+  const [editError, setEditError] = React.useState('');
+  const filteredItems = items.map((item, index) => ({ item, index }))
+    .filter(({ item }) => matchesModelSearch(item.model, search));
   const fireAdd = () => {
-    onAdd(inputVal);
-    setInputVal('');
+    const model = modelValue.trim();
+    const length = normalizeLengthValue(lengthValue);
+    if (!model || !length) return;
+    onAdd(model, length);
+    setModelValue('');
+    setLengthValue('');
   };
-  return /*#__PURE__*/React.createElement("div", {
-    className: "apple-card bg-white shadow-sm overflow-hidden"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "px-4 py-2.5 bg-gray-50/90 border-b border-gray-200/80"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "font-semibold text-sm text-gray-700"
-  }, title)), /*#__PURE__*/React.createElement("div", {
-    className: "divide-y divide-gray-100 max-h-48 overflow-auto"
-  }, items.length === 0 ? /*#__PURE__*/React.createElement("p", {
-    className: "text-center text-gray-400 py-4 text-xs"
-  }, "\u5217\u8868\u4E3A\u7A7A") : items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
-    key: idx,
-    className: "flex justify-between items-center px-4 py-2.5 hover:bg-gray-50/80 transition-colors"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-gray-800 font-medium text-sm"
-  }, item), /*#__PURE__*/React.createElement("button", {
-    onClick: () => onRemove(idx),
-    className: "text-gray-400 hover:text-red-500 p-1.5 apple-pill transition-colors"
-  }, /*#__PURE__*/React.createElement(Icons.Trash, null))))), /*#__PURE__*/React.createElement("div", {
-    className: "p-3 bg-gray-50/80 border-t border-gray-100 flex gap-2"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    value: inputVal,
-    onChange: e => setInputVal(e.target.value),
-    placeholder: `键入新${title.slice(0, 2)}...`,
-    className: "flex-1 px-3 py-2 border border-gray-200 bg-white apple-pill text-sm outline-none font-medium focus:border-blue-400 focus:ring-2 focus:ring-blue-100",
-    onKeyDown: e => e.key === 'Enter' && fireAdd()
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: fireAdd,
-    disabled: !inputVal.trim(),
-    className: "px-4 py-2 bg-blue-500 text-white text-xs font-semibold apple-pill disabled:opacity-40 hover:bg-blue-600 transition-colors"
-  }, "\u6DFB\u52A0")));
-}
+  const startEdit = item => {
+    setEditingModel(item.model);
+    setEditModel(item.model);
+    setEditLength(item.length);
+    setEditError('');
+  };
+  const saveEdit = event => {
+    event.preventDefault();
+    const error = onEdit(editingModel, editModel, editLength);
+    if (error) { setEditError(error); return; }
+    setEditingModel(null);
+    setEditError('');
+  };
+  const h = React.createElement;
+  return h("div", { className: "model-preset-card apple-card bg-white shadow-sm overflow-hidden" },
+    h("div", { className: "model-preset-heading px-4 py-2.5 bg-gray-50/90 border-b border-gray-200/80" },
+      h("h2", { className: "font-semibold text-sm text-gray-700" }, "型号与长度预设管理"),
+      h("input", {
+        type: "search", value: search, onChange: e => setSearch(e.target.value),
+        placeholder: "搜索型号", "aria-label": "搜索预设型号",
+        className: "model-preset-search model-picker-add-input"
+      })
+    ),
+    h("div", { className: "model-preset-add-row p-3 bg-gray-50/80 border-b border-gray-100 model-picker-add-row" },
+      h("input", {
+        type: "text", value: modelValue, onChange: e => setModelValue(e.target.value),
+        placeholder: "型号", "aria-label": "新增预设型号", className: "model-picker-add-input font-medium"
+      }),
+      h("input", {
+        type: "text", inputMode: "decimal", value: lengthValue,
+        onChange: e => setLengthValue(e.target.value), onKeyDown: e => e.key === 'Enter' && fireAdd(),
+        placeholder: "长度", "aria-label": "新增预设长度", className: "model-picker-add-input font-medium"
+      }),
+      h("button", {
+        type: "button", onClick: fireAdd, disabled: !modelValue.trim() || !lengthValue.trim(),
+        className: "model-picker-add-btn"
+      }, "添加")
+    ),
+    h("div", { className: "model-preset-list divide-y divide-gray-100 max-h-48 overflow-auto" },
+      filteredItems.length === 0
+        ? h("p", { className: "text-center text-gray-400 py-4 text-xs" }, items.length ? "暂无匹配型号" : "列表为空")
+        : filteredItems.map(({ item, index }) => h("div", { key: item.model },
+          editingModel === item.model
+            ? h("form", {
+                className: "model-preset-edit p-3", onSubmit: saveEdit,
+                onKeyDown: e => { if (e.key === 'Escape') setEditingModel(null); }
+              },
+                h("div", { className: "model-preset-edit-fields" },
+                  h("input", {
+                    autoFocus: true, value: editModel, onChange: e => { setEditModel(e.target.value); setEditError(''); },
+                    "aria-label": "修改预设型号", placeholder: "型号", className: "model-picker-add-input"
+                  }),
+                  h("input", {
+                    value: editLength, inputMode: "decimal",
+                    onChange: e => { setEditLength(e.target.value); setEditError(''); },
+                    "aria-label": "修改预设长度", placeholder: "长度", className: "model-picker-add-input"
+                  })
+                ),
+                editError && h("p", { role: "alert", className: "model-preset-error" }, editError),
+                h("div", { className: "model-preset-edit-actions" },
+                  h("button", { type: "submit", className: "model-picker-add-btn" }, "保存"),
+                  h("button", { type: "button", className: "model-preset-edit-button", onClick: () => setEditingModel(null) }, "取消")
+                )
+              )
+            : h("div", { className: "bound-preset-row px-4 py-2.5 hover:bg-gray-50/80 transition-colors" },
+                h("div", { className: "bound-preset-values" },
+                  h("span", { className: "bound-preset-label text-gray-800 font-medium text-sm", title: item.model }, item.model),
+                  h("span", { className: "bound-preset-length text-sm" }, item.length)
+                ),
+                h("div", { className: "bound-preset-actions" },
+                  h("button", { type: "button", className: "model-preset-edit-button", onClick: () => startEdit(item), "aria-label": "修改预设 " + item.model, title: "修改预设" }, h(Icons.Pencil, null)),
+                  h("button", {
+                    type: "button", onClick: () => onRemove(index), "aria-label": "删除预设 " + item.model,
+                    className: "text-gray-400 hover:text-red-500 p-1.5 apple-pill transition-colors"
+                  }, h(Icons.Trash, null))
+                )
+              )
+        ))
+    )
+  );
+};
 
 
   try {
