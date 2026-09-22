@@ -654,120 +654,13 @@ try {
     }
   }
 } catch (e) {}
-const getAppViewportMetrics = () => {
-  const viewport = window.visualViewport;
-  return {
-    width: viewport ? viewport.width : window.innerWidth,
-    height: viewport ? viewport.height : window.innerHeight,
-    left: viewport ? viewport.offsetLeft : 0,
-    top: viewport ? viewport.offsetTop : 0
-  };
-};
-const ensureFocusedInputVisible = () => {
-  const active = document.activeElement;
-  if (!active || !active.matches || !active.matches('input, textarea, select, [contenteditable="true"]')) return;
-  const viewport = getAppViewportMetrics();
-  const rect = active.getBoundingClientRect();
-  const safeTop = viewport.top + 12;
-  const safeBottom = viewport.top + viewport.height - 16;
-  if (rect.top < safeTop || rect.bottom > safeBottom) {
-    try {
-      active.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
-    } catch (e) {
-      active.scrollIntoView(false);
-    }
-  }
-};
-// 使用“应用还需要避让的高度”，而不是直接重复添加整个设备状态栏高度。
-// https://www.html5plus.org/doc/zh_cn/navigator.html#plus.navigator.SafeAreaInsets
-const getNativeTopInset = runtime => {
-  const nav = runtime && runtime.navigator;
-  if (!nav) return 0;
-  try {
-    if (typeof nav.getSafeAreaInsets === 'function') {
-      const area = nav.getSafeAreaInsets();
-      // 0 是有效值：表示原生窗口已处理安全区，不能回退为状态栏高度。
-      if (area && typeof area.top === 'number' && Number.isFinite(area.top) && area.top >= 0) {
-        return area.top;
-      }
-    }
-  } catch (e) {}
-  // 兼容旧版运行环境；网页版不调用此逻辑，仍使用 CSS env()。
-  try {
-    if (nav.isImmersedStatusbar && nav.isImmersedStatusbar() && nav.getStatusbarHeight) {
-      return Math.max(0, Number(nav.getStatusbarHeight()) || 0);
-    }
-  } catch (e) {}
-  return 0;
-};
-const installMobileViewportSupport = () => {
-  let frame = 0;
-  let lastHeight = 0;
-  const update = () => {
-    frame = 0;
-    const viewport = getAppViewportMetrics();
-    const height = Math.max(240, Math.round(viewport.height));
-    const keyboardHeight = Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.top));
-    if (height !== lastHeight) {
-      document.documentElement.style.setProperty('--app-viewport-height', height + 'px');
-      lastHeight = height;
-    }
-    document.documentElement.toggleAttribute('data-keyboard-open', keyboardHeight > 80);
-    ensureFocusedInputVisible();
-  };
-  const scheduleUpdate = () => {
-    if (!frame) frame = requestAnimationFrame(update);
-  };
-  window.addEventListener('resize', scheduleUpdate, { passive: true });
-  window.addEventListener('orientationchange', scheduleUpdate, { passive: true });
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', scheduleUpdate, { passive: true });
-    window.visualViewport.addEventListener('scroll', scheduleUpdate, { passive: true });
-  }
-  let focusTimers = [];
-  const clearFocusTimers = () => {
-    focusTimers.forEach(clearTimeout);
-    focusTimers = [];
-  };
-  document.addEventListener('focusin', () => {
-    clearFocusTimers();
-    scheduleUpdate();
-    focusTimers = [180, 420].map(delay => setTimeout(ensureFocusedInputVisible, delay));
-  });
-  document.addEventListener('focusout', () => {
-    clearFocusTimers();
-    scheduleUpdate();
-  });
-  const syncNativeSafeArea = () => {
-    if (!window.plus) return;
-    const value = getNativeTopInset(window.plus) + 'px';
-    if (document.documentElement.style.getPropertyValue('--safe-top') !== value) {
-      document.documentElement.style.setProperty('--safe-top', value);
-    }
-  };
-  let nativeSafeAreaInstalled = false;
-  const configurePlusRuntime = () => {
-    try {
-      const current = plus.webview.currentWebview();
-      current.setStyle({ top: '0px', softinputMode: 'adjustResize', bounce: 'none', scrollIndicator: 'none' });
-      if (plus.navigator && plus.navigator.setStatusBarBackground) plus.navigator.setStatusBarBackground('#FFFFFF');
-    } catch (e) {
-      console.warn('移动端窗口配置未应用', e);
-    }
-    // 先应用窗口位置，再读取剩余安全区；下一帧复核异步原生布局。
-    syncNativeSafeArea();
-    requestAnimationFrame(syncNativeSafeArea);
-    if (!nativeSafeAreaInstalled) {
-      nativeSafeAreaInstalled = true;
-      document.addEventListener('resume', syncNativeSafeArea);
-      window.addEventListener('orientationchange', syncNativeSafeArea, { passive: true });
-    }
-    scheduleUpdate();
-  };
-  if (window.plus) configurePlusRuntime();else document.addEventListener('plusready', configurePlusRuntime, { once: true });
-  update();
-};
-installMobileViewportSupport();
+// 网页版由浏览器处理输入法；弹窗仅按布局视口定位，不主动顶起或滚动输入框。
+const getAppViewportMetrics = () => ({
+  width: document.documentElement.clientWidth || window.innerWidth,
+  height: document.documentElement.clientHeight || window.innerHeight,
+  left: 0,
+  top: 0
+});
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const DEFAULT_FONT_SCALE = 1;
 const MIN_FONT_SCALE = 0.85;
@@ -1372,27 +1265,18 @@ const ModelPickerCell = React.memo(function ModelPickerCellImpl({
         viewportFrame = 0;
         const input = wrapRef.current && wrapRef.current.querySelector('.model-picker-input');
         positionMenu(input);
-        ensureFocusedInputVisible();
       });
     };
     document.addEventListener('pointerdown', onDocPointerDown);
     document.addEventListener('keydown', onKeyDown);
     window.addEventListener('resize', reposition, { passive: true });
     window.addEventListener('scroll', reposition, true);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', reposition, { passive: true });
-      window.visualViewport.addEventListener('scroll', reposition, { passive: true });
-    }
     return () => {
       if (viewportFrame) cancelAnimationFrame(viewportFrame);
       document.removeEventListener('pointerdown', onDocPointerDown);
       document.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('resize', reposition);
       window.removeEventListener('scroll', reposition, true);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', reposition);
-        window.visualViewport.removeEventListener('scroll', reposition);
-      }
     };
   }, [open, positionMenu]);
   const filteredOptions = React.useMemo(() => options.filter(item => matchesModelSearch(item.model, search)), [options, search]);
